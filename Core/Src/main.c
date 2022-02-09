@@ -59,6 +59,74 @@ static void MX_USB_PCD_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+
+uint8_t const * tud_hid_descriptor_report_cb(uint8_t itf){
+	char buffer[] = "tud_hid_descriptoor_report_cb\r\n";
+	HAL_UART_Transmit(&huart1, &buffer[0], strlen(buffer), 10);
+}
+
+void tud_cdc_rx_cb(uint8_t itf){
+	char buffer[] = "tud_cdc_rx_cb\r\n";
+	HAL_UART_Transmit(&huart1, &buffer[0], strlen(buffer), 10);
+}
+
+void tud_cdc_tx_complete_cb(uint8_t itf){
+	char buffer[] = "tud_cdc_tx_complete_cb\r\n";
+	HAL_UART_Transmit(&huart1, &buffer[0], strlen(buffer), 10);
+}
+
+void tud_hid_set_report_cb(uint8_t itf, uint8_t report_id, hid_report_type_t report_type, uint8_t const* buffer, uint16_t bufsize){
+	char buf[] = "tud_hid_set_report_cb\r\n";
+	HAL_UART_Transmit(&huart1, &buf[0], strlen(buf), 10);
+}
+
+uint16_t tud_hid_get_report_cb(uint8_t itf, uint8_t report_id, hid_report_type_t report_type,uint8_t* buffer, uint16_t reqlen){
+	char buf[] = "tud_hid_get_report_cb\r\n";
+	HAL_UART_Transmit(&huart1, &buf[0], strlen(buf), 10);
+}
+
+void tud_hid_report_complete_cb(uint8_t itf, uint8_t const* report, uint8_t len){
+	char buffer[] = "tud_hid_report_complete_cb\r\n";
+	HAL_UART_Transmit(&huart1, &buffer[0], strlen(buffer), 10);
+}
+
+uint8_t const * tud_descriptor_device_cb(void)
+{
+	char buffer[] = "tud_descriptor_device\r\n";
+	HAL_UART_Transmit(&huart1, &buffer[0], strlen(buffer), 10);
+}
+uint8_t const * tud_descriptor_configuration_cb(uint8_t index)
+{
+	char buffer[] = "tud_descriptor_configuration_cb\r\n";
+	HAL_UART_Transmit(&huart1, &buffer[0], strlen(buffer), 10);
+}
+uint16_t const* tud_descriptor_string_cb(uint8_t index, uint16_t langid)
+{
+	char buffer[] = "tud_descriptor_string_cb\r\n";
+	HAL_UART_Transmit(&huart1, &buffer[0], strlen(buffer), 10);
+}
+void tud_mount_cb(void)
+{
+	char buffer[] = "tud_mount_cb\r\n";
+	HAL_UART_Transmit(&huart1, &buffer[0], strlen(buffer), 10);
+
+}
+void tud_umount_cb(void)
+{
+	char buffer[] = "tud_umount_cb\r\n";
+	HAL_UART_Transmit(&huart1, &buffer[0], strlen(buffer), 10);
+}
+void tud_suspend_cb(bool remote_wakeup_en)
+{
+	char buffer[] = "tud_suspend_cb\r\n";
+	HAL_UART_Transmit(&huart1, &buffer[0], strlen(buffer), 10);
+
+}
+void tud_resume_cb(void)
+{
+	char buffer[] = "tud_resume_cb\r\n";
+	HAL_UART_Transmit(&huart1, &buffer[0], strlen(buffer), 10);
+}
 /* USER CODE END 0 */
 
 /**
@@ -77,7 +145,6 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-  tusb_init();
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -92,17 +159,18 @@ int main(void)
   MX_USART1_UART_Init();
   MX_USB_PCD_Init();
   /* USER CODE BEGIN 2 */
-
+  if(!tusb_init()) {
+	  Error_Handler();
+  }
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  char buffer[] = "before start\r\n";
+  HAL_UART_Transmit(&huart1, &buffer[0], strlen(buffer), 10);
   while (1)
   {
 	tud_task();
-	// test logging to virtual com
-	char buffer[] = "hello\r\n";
-	HAL_UART_Transmit(&huart1, &buffer[0], strlen(buffer), 10);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

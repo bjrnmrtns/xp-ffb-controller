@@ -22,6 +22,8 @@
 #include "stm32f3xx_it.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "tusb.h"
+#include "tusb_config.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -207,9 +209,9 @@ void USB_HP_CAN_TX_IRQHandler(void)
   /* USER CODE BEGIN USB_HP_CAN_TX_IRQn 0 */
 
   /* USER CODE END USB_HP_CAN_TX_IRQn 0 */
-  HAL_PCD_IRQHandler(&hpcd_USB_FS);
+  //HAL_PCD_IRQHandler(&hpcd_USB_FS);
   /* USER CODE BEGIN USB_HP_CAN_TX_IRQn 1 */
-
+  tud_int_handler(BOARD_DEVICE_RHPORT_NUM);
   /* USER CODE END USB_HP_CAN_TX_IRQn 1 */
 }
 
@@ -221,9 +223,9 @@ void USB_LP_CAN_RX0_IRQHandler(void)
   /* USER CODE BEGIN USB_LP_CAN_RX0_IRQn 0 */
 
   /* USER CODE END USB_LP_CAN_RX0_IRQn 0 */
-  HAL_PCD_IRQHandler(&hpcd_USB_FS);
+  //HAL_PCD_IRQHandler(&hpcd_USB_FS);
   /* USER CODE BEGIN USB_LP_CAN_RX0_IRQn 1 */
-
+  tud_int_handler(BOARD_DEVICE_RHPORT_NUM);
   /* USER CODE END USB_LP_CAN_RX0_IRQn 1 */
 }
 
