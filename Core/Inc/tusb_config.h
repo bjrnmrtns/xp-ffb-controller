@@ -1,0 +1,11 @@
+#ifndef INC_TUSB_CONFIG_H_
+#define INC_TUSB_CONFIG_H_
+
+#define CFG_TUSB_MCU                 OPT_MCU_STM32F3
+#define CFG_TUSB_OS                  OPT_OS_NONE
+#define BOARD_DEVICE_RHPORT_SPEED    OPT_MODE_FULL_SPEED
+#define BOARD_DEVICE_RHPORT_NUM     1
+#define CFG_TUSB_RHPORT1_MODE       (OPT_MODE_DEVICE | OPT_MODE_FULL_SPEED)
+
+
+#endif /* INC_TUSB_CONFIG_H_ */

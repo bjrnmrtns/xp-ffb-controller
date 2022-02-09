@@ -21,7 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "tusb.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -77,7 +77,7 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-
+  tusb_init();
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -99,6 +99,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	tud_task();
 	// test logging to virtual com
 	char buffer[] = "hello\r\n";
 	HAL_UART_Transmit(&huart1, &buffer[0], strlen(buffer), 10);
