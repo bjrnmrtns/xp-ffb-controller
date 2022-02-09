@@ -95,6 +95,9 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	// test logging to virtual com
+	char buffer[] = "hello\r\n";
+	HAL_UART_Transmit(&huart1, &buffer[0], strlen(buffer), 10);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
