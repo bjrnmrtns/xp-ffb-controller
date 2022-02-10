@@ -200,23 +200,27 @@ uint16_t const* tud_descriptor_string_cb(uint8_t index, uint16_t langid)
 }
 void tud_mount_cb(void)
 {
+	// start all stuff because usb is started
 	char buffer[] = "tud_mount_cb\r\n";
 	HAL_UART_Transmit(&huart1, &buffer[0], strlen(buffer), 10);
 
 }
 void tud_umount_cb(void)
 {
+	// stop all stuff because usb is essentially stopped
 	char buffer[] = "tud_umount_cb\r\n";
 	HAL_UART_Transmit(&huart1, &buffer[0], strlen(buffer), 10);
 }
 void tud_suspend_cb(bool remote_wakeup_en)
 {
+	// stop all stuff because usb is essentially stopped
 	char buffer[] = "tud_suspend_cb\r\n";
 	HAL_UART_Transmit(&huart1, &buffer[0], strlen(buffer), 10);
 
 }
 void tud_resume_cb(void)
 {
+	// start all stuff because usb is started
 	char buffer[] = "tud_resume_cb\r\n";
 	HAL_UART_Transmit(&huart1, &buffer[0], strlen(buffer), 10);
 }
