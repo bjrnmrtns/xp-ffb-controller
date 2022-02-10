@@ -199,7 +199,7 @@ void tud_hid_set_report_cb(uint8_t itf, uint8_t report_id, hid_report_type_t rep
 		report_id = *buffer;
 	}
 
-	hidGet(report_id,report_type,buffer,bufsize);
+	hidOut(report_id,report_type,buffer,bufsize);
 
 	if(report_id == HID_ID_HIDCMD) {
 		hidCmdCallback((HID_CMD_Data_t*)(buffer));
@@ -209,6 +209,7 @@ void tud_hid_set_report_cb(uint8_t itf, uint8_t report_id, hid_report_type_t rep
 uint16_t tud_hid_get_report_cb(uint8_t itf, uint8_t report_id, hid_report_type_t report_type,uint8_t* buffer, uint16_t reqlen){
 	char buf[] = "tud_hid_get_report_cb\r\n";
 	HAL_UART_Transmit(&huart1, &buf[0], strlen(buf), 10);
+	return hidGet(report_id, report_type, buffer,reqlen);
 }
 
 void tud_hid_report_complete_cb(uint8_t itf, uint8_t const* report, uint8_t len){
