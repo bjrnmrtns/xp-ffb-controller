@@ -91,6 +91,19 @@ const uint8_t	usb_dev_desc_manufacturer[] = "Open_FFBoard";
 const uint8_t usb_dev_desc_product[] = "FFBoard";
 const uint8_t* usb_dev_desc_interfaces[] = { "FFBoard CDC", "FFBoard HID" };
 
+FFB_BlockLoad_Feature_Data_t blockLoad_report =
+{
+	.reportId = HID_ID_BLKLDREP,
+};
+
+FFB_PIDPool_Feature_Data_t pool_report =
+{
+	.reportId = HID_ID_POOLREP,
+	.ramPoolSize = MAX_EFFECTS,
+	.maxSimultaneousEffects = MAX_EFFECTS,
+	.memoryManagement = 1,	// 0=DeviceManagedPool, 1=SharedParameterBlocks
+};
+
 uint16_t _desc_str[USB_STRING_DESC_BUF_SIZE];
 
 /*const uint8_t usb_cdc_conf[] =
@@ -135,6 +148,22 @@ void tud_cdc_tx_complete_cb(uint8_t itf){
 uint16_t hidGet(uint8_t report_id, hid_report_type_t report_type,uint8_t* buffer, uint16_t reqlen){
 	char buf[] = "hidGet\r\n";
 	HAL_UART_Transmit(&huart1, &buf[0], strlen(buf), 10);
+	uint8_t id = report_id - FFB_ID_OFFSET;
+
+	switch(id){
+	case HID_ID_BLKLDREP:
+		//printf("Get Block Report\n");
+		memcpy(buffer,&blockLoad_report,sizeof(FFB_BlockLoad_Feature_Data_t));
+		return sizeof(FFB_BlockLoad_Feature_Data_t);
+		break;
+	case HID_ID_POOLREP:
+		//printf("Get Pool Report\n");
+		memcpy(buffer,&pool_report,sizeof(FFB_PIDPool_Feature_Data_t));
+		return sizeof(FFB_PIDPool_Feature_Data_t);
+		break;
+	default:
+		break;
+	}
 	return 0;
 }
 

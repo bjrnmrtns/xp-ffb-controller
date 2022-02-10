@@ -90,4 +90,21 @@ extern const uint8_t hid_ffb_desc[USB_HID_FFB_REPORT_DESC_SIZE];
 #define FFB_EFFECT_DURATION_INFINITE 0xffff
 
 
+typedef struct
+{
+	uint8_t	reportId;// = HID_ID_BLKLDREP;
+	uint8_t effectBlockIndex;	// 1..max_effects
+	uint8_t	loadStatus;	// 1=Success,2=Full,3=Error
+	uint16_t	ramPoolAvailable;
+} __attribute__((packed)) FFB_BlockLoad_Feature_Data_t;
+
+typedef struct
+{
+	uint8_t	reportId;// = HID_ID_POOLREP;
+	uint16_t	ramPoolSize;// = MAX_EFFECTS;
+	uint8_t		maxSimultaneousEffects;// = MAX_EFFECTS;
+	uint8_t		memoryManagement// = 1;	// 0=DeviceManagedPool, 1=SharedParameterBlocks
+} __attribute__((packed)) FFB_PIDPool_Feature_Data_t;
+
+
 #endif /* SRC_FFB_DESCRIPTOR_H_ */
