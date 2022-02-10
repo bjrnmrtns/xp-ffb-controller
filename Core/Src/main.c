@@ -21,6 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "ffb_descriptor.h"
 #include "tusb.h"
 /* USER CODE END Includes */
 
@@ -59,7 +60,6 @@ static void MX_USB_PCD_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 #define HID_BINTERVAL 0x01 // 1 = 1000hz, 2 = 500hz, 3 = 333hz 4 = 250hz, 5 = 200hz 6 = 166hz, 7 = 125hz...
-#define USB_HID_FFB_REPORT_DESC_SIZE 1229//1378
 #define USB_STRING_DESC_BUF_SIZE 32
 #define USBD_VID     0x1209
 #define USBD_PID     0xFFB0
@@ -117,8 +117,9 @@ const uint8_t usb_cdc_hid_conf[] =
 
 
 uint8_t const * tud_hid_descriptor_report_cb(uint8_t itf){
-	char buffer[] = "tud_hid_descriptoor_report_cb\r\n";
+	char buffer[] = "tud_hid_descriptor_report_cb\r\n";
 	HAL_UART_Transmit(&huart1, &buffer[0], strlen(buffer), 10);
+	return hid_ffb_desc;
 }
 
 void tud_cdc_rx_cb(uint8_t itf){
