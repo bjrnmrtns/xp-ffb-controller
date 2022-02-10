@@ -35,7 +35,6 @@
 //--------------------------------------------------------------------
 
 // defined by board.mk
-
 #define CFG_TUSB_MCU OPT_MCU_STM32F3 // target config
 #ifndef CFG_TUSB_MCU
   #error CFG_TUSB_MCU must be defined
@@ -93,7 +92,7 @@
 
 //------------- CLASS -------------//
  // Which classes are compiled and available
-#define CFG_TUD_CDC               0
+#define CFG_TUD_CDC               1
 #define CFG_TUD_MSC               0
 #define CFG_TUD_MIDI              0
 #define CFG_TUD_HID               1

@@ -58,6 +58,8 @@ static void MX_USB_PCD_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+#define HID_BINTERVAL 0x01 // 1 = 1000hz, 2 = 500hz, 3 = 333hz 4 = 250hz, 5 = 200hz 6 = 166hz, 7 = 125hz...
+#define USB_HID_FFB_REPORT_DESC_SIZE 1229//1378
 #define USB_STRING_DESC_BUF_SIZE 32
 #define USBD_VID     0x1209
 #define USBD_PID     0xFFB0
@@ -87,7 +89,7 @@ const tusb_desc_device_t usb_devdesc_ffboard_composite =
 const uint16_t usb_dev_desc_langId = 0x0409;
 const uint8_t	usb_dev_desc_manufacturer[] = "Open_FFBoard";
 const uint8_t usb_dev_desc_product[] = "FFBoard";
-const uint8_t* usb_dev_desc_interfaces[] = {"FFBoard CDC", "FFBoard HID","FFBoard MIDI"};
+const uint8_t* usb_dev_desc_interfaces[] = { "FFBoard CDC", "FFBoard HID" };
 
 uint16_t _desc_str[USB_STRING_DESC_BUF_SIZE];
 
@@ -99,7 +101,7 @@ uint16_t _desc_str[USB_STRING_DESC_BUF_SIZE];
   // 1st CDC: Interface number, string index, EP notification address and size, EP data address (out, in) and size.
   TUD_CDC_DESCRIPTOR(0, 4, 0x82, 8, 0x01, 0x81, 64),
 };
-
+*/
 // Composite CDC and HID
 const uint8_t usb_cdc_hid_conf[] =
 {
@@ -110,9 +112,8 @@ const uint8_t usb_cdc_hid_conf[] =
   TUD_CDC_DESCRIPTOR(0, 4, 0x82, 8, 0x01, 0x81, 64),
 
   // HID Descriptor. EP 83 and 2
-  TUD_HID_INOUT_DESCRIPTOR(2, 5, HID_PROTOCOL_NONE, USB_HID_FFB_REPORT_DESC_SIZE, 0x83, 0x02, 64, HID_BINTERVAL),
+  TUD_HID_INOUT_DESCRIPTOR(2, 5, HID_ITF_PROTOCOL_NONE, USB_HID_FFB_REPORT_DESC_SIZE, 0x83, 0x02, 64, HID_BINTERVAL),
 };
-*/
 
 
 uint8_t const * tud_hid_descriptor_report_cb(uint8_t itf){
@@ -155,6 +156,7 @@ uint8_t const * tud_descriptor_configuration_cb(uint8_t index)
 {
 	char buffer[] = "tud_descriptor_configuration_cb\r\n";
 	HAL_UART_Transmit(&huart1, &buffer[0], strlen(buffer), 10);
+	return usb_cdc_hid_conf;
 }
 
 void ascii_to_utf16(uint16_t* dest, const uint8_t* src) {
