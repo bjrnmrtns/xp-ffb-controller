@@ -66,3 +66,8 @@ void EffectsCalculator_setFilters(EffectsCalculator* self, FFB_Effect *effect) {
             break;
     }
 }
+
+void EffectsCalculator_setGain(EffectsCalculator* self, uint8_t gain)
+{
+    self->global_gain = gain;
+}

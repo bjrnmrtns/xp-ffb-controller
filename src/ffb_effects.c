@@ -58,11 +58,11 @@ void free_effect(uint16_t idx){
         }
     }
 }
-
-void set_gain(uint8_t gain){
-    assert(effects_calc != nullptr);
-    effects_calc->setGain(gain);
+*/
+void set_gain(hid_ffb_t* self, uint8_t gain){
+    EffectsCalculator_setGain(self, gain);
 }
+/*
 */
 void set_filters(hid_ffb_t* self, FFB_Effect *effect){
     EffectsCalculator_setFilters(&self->effectsCalculator, effect);
@@ -267,7 +267,7 @@ void hidOut(uint8_t report_id, hid_report_type_t report_type, uint8_t const* buf
             sendStatusReport(&hid_ffb, 0);
             break;
         case HID_ID_GAINREP: // Set global gain
-            //set_gain(report[1]);
+            set_gain(&hid_ffb, report[1]);
             break;
         case HID_ID_ENVREP: // Envelope
             //set_envelope((FFB_SetEnvelope_Data_t *)report);

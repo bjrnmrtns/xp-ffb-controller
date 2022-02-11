@@ -37,3 +37,4 @@ typedef struct {
 void EffectsCalculator_init(EffectsCalculator* self);
 void EffectsCalculator_logEffectType(EffectsCalculator* self, uint8_t type);
 void EffectsCalculator_setFilters(EffectsCalculator* self, FFB_Effect *effect);
+void EffectsCalculator_setGain(EffectsCalculator* self, uint8_t gain);
