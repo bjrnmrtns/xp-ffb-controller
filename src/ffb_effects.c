@@ -262,21 +262,20 @@ void hidOut(uint8_t report_id, hid_report_type_t report_type, uint8_t const* buf
         case HID_ID_EFOPREP: //Effect operation
         {
             // Start or stop effect
-            /*uint8_t id = report[1]-1;
+            uint8_t id = report[1]-1;
             if(report[2] == 3){
-                effects[id].state = 0; //Stop
+                hid_ffb.effects[id].state = 0; //Stop
                 //printf("Stop %d\n",report[1]);
             }else{
-                if(effects[id].state != 1){
-                    set_filters(&effects[id]);
+                if(hid_ffb.effects[id].state != 1){
+                    set_filters(&hid_ffb, &hid_ffb.effects[id]);
                     //effects[id].startTime = 0; // When an effect was stopped reset all parameters that could cause jerking
                 }
                 //printf("Start %d\n",report[1]);
-                effects[id].startTime = HAL_GetTick() + effects[id].startDelay; // + effects[id].startDelay;
-                effects[id].state = 1; //Start
+                hid_ffb.effects[id].startTime = HAL_GetTick() + hid_ffb.effects[id].startDelay; // + effects[id].startDelay;
+                hid_ffb.effects[id].state = 1; //Start
             }
             //sendStatusReport(report[1]);
-             */
             break;
         }
         case HID_ID_BLKFRREP: // Free a block
