@@ -2,8 +2,10 @@
 
 #include "tusb.h"
 
+extern hid_ffb_t hid_ffb;
+
 int ffb_init() {
-    ffb_effects_init();
+    hid_ffb_t_init(&hid_ffb);
     return tud_init(BOARD_DEVICE_RHPORT_NUM);
 }
 

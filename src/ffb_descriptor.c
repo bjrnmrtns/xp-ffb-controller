@@ -784,3 +784,40 @@ void FFB_PIDPool_Feature_Data_t_init(FFB_PIDPool_Feature_Data_t* self) {
     self->maxSimultaneousEffects = MAX_EFFECTS;
     self->memoryManagement = 1;	// 0=DeviceManagedPool, 1=SharedParameterBlocks
 }
+
+void FFB_Effect_init(FFB_Effect* self) {
+    self->state = 0;
+    self->type = FFB_EFFECT_NONE; // Type
+    self->offset = 0;				// Center point
+    self->gain = 255;				// Scaler. often unused
+    self->magnitude = 0;			// High res intensity of effect
+    self->startLevel = 0;			// Ramp effect
+    self->endLevel = 0;			// Ramp effect
+    self->enableAxis = 0;			// Active axis
+    self->directionX = 0;		// angle (0=0 .. 36000=360deg)
+    self->directionY = 0;		// angle (0=0 .. 36000=360deg)
+#if MAX_AXIS == 3
+    self->directionZ = 0; // angle (0=0 .. 255=360deg)
+#endif
+    self->conditionsCount = 0;
+    self->phase = 0;
+    self->period = 0;
+    self->duration = 0;					 // Duration in ms
+    self->attackLevel = 0, self->fadeLevel = 0; // Envelope effect
+    self->attackTime = 0, self->fadeTime = 0;	 // Envelope effect
+
+    for(size_t i = 0; i < MAX_AXIS; i++) {
+        biquad_init_none(&self->filter[i]);
+    }
+    self->startDelay = 0;
+    self->startTime = 0;	  // Elapsed time in ms before effect starts
+    self->samplePeriod = 0;
+    self->useEnvelope = 0;
+}
+
+void reportFFB_status_t_init(reportFFB_status_t* self) {
+    self->reportId = HID_ID_STATE+FFB_ID_OFFSET;
+    self->effectBlockIndex = 1;	//EffectId
+    self->status = (HID_ACTUATOR_POWER) | (HID_ENABLE_ACTUATORS);	// Bits: 0=Device Paused,1=Actuators Enabled,2=Safety Switch,3=Actuator Power, 4=Effect Playing
+}
+

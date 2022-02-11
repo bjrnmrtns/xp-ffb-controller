@@ -9,47 +9,25 @@
 
 extern UART_HandleTypeDef huart1;
 
-FFB_BlockLoad_Feature_Data_t blockLoad_report;
-FFB_PIDPool_Feature_Data_t pool_report;
-FFB_Effect effects[MAX_EFFECTS];
+hid_ffb_t hid_ffb;
 
-void ffb_effects_init() {
-    FFB_BlockLoad_Feature_Data_t_init(&blockLoad_report);
-    FFB_PIDPool_Feature_Data_t_init(&pool_report);
+void hid_ffb_t_init(hid_ffb_t* self) {
+    self->hid_out_period = 0; // ms since last out report for measuring update rate
+
+    self->last_effect_id = 0;
+    self->used_effects = 0;
+    self->ffb_active = 0;
+    FFB_BlockLoad_Feature_Data_t_init(&self->blockLoad_report);
+    FFB_PIDPool_Feature_Data_t_init(&self->pool_report);
     for(size_t i = 0; i < MAX_EFFECTS; i++) {
-        FFB_Effect_init(&effects[i]);
+        FFB_Effect_init(&self->effects[i]);
     }
+    EffectsCalculator_init(&self->effectsCalculator);
+    reportFFB_status_t_init(&self->reportFFBStatus);
+    self->lastOut = 0;
+
 }
 
-void FFB_Effect_init(FFB_Effect* self) {
-    self->state = 0;
-    self->type = FFB_EFFECT_NONE; // Type
-    self->offset = 0;				// Center point
-    self->gain = 255;				// Scaler. often unused
-    self->magnitude = 0;			// High res intensity of effect
-    self->startLevel = 0;			// Ramp effect
-    self->endLevel = 0;			// Ramp effect
-    self->enableAxis = 0;			// Active axis
-    self->directionX = 0;		// angle (0=0 .. 36000=360deg)
-    self->directionY = 0;		// angle (0=0 .. 36000=360deg)
-#if MAX_AXIS == 3
-    self->directionZ = 0; // angle (0=0 .. 255=360deg)
-#endif
-    self->conditionsCount = 0;
-    self->phase = 0;
-    self->period = 0;
-    self->duration = 0;					 // Duration in ms
-    self->attackLevel = 0, self->fadeLevel = 0; // Envelope effect
-    self->attackTime = 0, self->fadeTime = 0;	 // Envelope effect
-
-    for(size_t i = 0; i < MAX_AXIS; i++) {
-        self->filter[i] = 0;
-    }
-    self->startDelay = 0;
-    self->startTime = 0;	  // Elapsed time in ms before effect starts
-    self->samplePeriod = 0;
-    self->useEnvelope = 0;
-}
 
 /*bool HID_SendReport(uint8_t *report, uint16_t len){
     return tud_hid_report(0, report, len);
@@ -85,46 +63,46 @@ void set_gain(uint8_t gain){
     assert(effects_calc != nullptr);
     effects_calc->setGain(gain);
 }
-
-void set_filters(FFB_Effect *effect){
-    assert(effects_calc != nullptr);
-    effects_calc->setFilters(effect);
+*/
+void set_filters(hid_ffb_t* self, FFB_Effect *effect){
+    EffectsCalculator_setFilters(&self->effectsCalculator, effect);
 }
+/*
 
 void set_constant_effect(FFB_SetConstantForce_Data_t* effect){
     effects[effect->effectBlockIndex-1].magnitude = effect->magnitude;
 }*/
-uint8_t find_free_effect(uint8_t type){ //Will return the first effect index which is empty or the same type
+uint8_t find_free_effect(hid_ffb_t* self, uint8_t type){ //Will return the first effect index which is empty or the same type
     for(uint8_t i=0;i<MAX_EFFECTS;i++){
-        if(effects[i].type == FFB_EFFECT_NONE){
-            return(i+1);
+        if(self->effects[i].type == FFB_EFFECT_NONE){
+            return i;
         }
     }
-    return 0;
+    return -1;
 }
-/*void new_effect(FFB_CreateNewEffect_Feature_Data_t* effect){
+/*
+void new_effect(FFB_CreateNewEffect_Feature_Data_t* effect){
     // Allocates a new effect
 
     uint8_t index = find_free_effect(effect->effectType); // next effect
-    if(index == 0){
+    if(index == -1){
         blockLoad_report.loadStatus = 2;
         return;
     }
-    //CommandHandler::logSerial("Creating Effect: " + std::to_string(effect->effectType) +  " at " + std::to_string(index) + "\n");
-    FFB_Effect new_effect;
-    new_effect.type = effect->effectType;
-    this->effects_calc->logEffectType(effect->effectType);
+    FFB_Effect* new_effect = &effects[index];
+    FFB_Effect_init(new_effect);
+    new_effect->type = effect->effectType;
+    EffectsCalculator_logEffectType(&effectsCalculator, effect->effectType);
+    set_filters(new_effect);
 
-    set_filters(&new_effect);
-
-    effects[index-1] = std::move(new_effect);
     // Set block load report
-    reportFFBStatus.effectBlockIndex = index;
-    blockLoad_report.effectBlockIndex = index;
+    reportFFBStatus.effectBlockIndex = index + 1;
+    blockLoad_report.effectBlockIndex = index + 1;
     used_effects++;
     blockLoad_report.ramPoolAvailable = MAX_EFFECTS-used_effects;
     blockLoad_report.loadStatus = 1;
-}*/
+}
+ */
 /*
 void set_effect(FFB_SetEffect_t* effect){
     uint8_t index = effect->effectBlockIndex;
@@ -224,12 +202,12 @@ uint16_t hidGet(uint8_t report_id, hid_report_type_t report_type,uint8_t* buffer
     switch(id){
         case HID_ID_BLKLDREP:
             //printf("Get Block Report\n");
-            memcpy(buffer,&blockLoad_report,sizeof(FFB_BlockLoad_Feature_Data_t));
+            memcpy(buffer,&hid_ffb.blockLoad_report,sizeof(FFB_BlockLoad_Feature_Data_t));
             return sizeof(FFB_BlockLoad_Feature_Data_t);
             break;
         case HID_ID_POOLREP:
             //printf("Get Pool Report\n");
-            memcpy(buffer,&pool_report,sizeof(FFB_PIDPool_Feature_Data_t));
+            memcpy(buffer,&hid_ffb.pool_report,sizeof(FFB_PIDPool_Feature_Data_t));
             return sizeof(FFB_PIDPool_Feature_Data_t);
             break;
         default:
