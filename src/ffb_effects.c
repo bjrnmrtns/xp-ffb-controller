@@ -48,31 +48,28 @@ void sendStatusReport(hid_ffb_t* self, uint8_t effect){
     //printf("Status: %d\n",reportFFBStatus.status);
     HID_SendReport((uint8_t*)(&self->reportFFBStatus), sizeof(reportFFB_status_t));
 }
-/*
-void free_effect(uint16_t idx){
+
+void free_effect(hid_ffb_t* self, uint16_t idx){
     if(idx < MAX_EFFECTS){
-        effects[idx].type=FFB_EFFECT_NONE;
+        self->effects[idx].type=FFB_EFFECT_NONE;
         for(int i=0; i< MAX_AXIS; i++) {
-            if(effects[idx].filter[i] != nullptr){
-                effects[idx].filter[i].reset(nullptr);
-            }
+            self->effects[idx].filter[i].opt = opt_none;
         }
     }
 }
-*/
+
 void set_gain(hid_ffb_t* self, uint8_t gain){
     EffectsCalculator_setGain(&self->effectsCalculator, gain);
 }
-/*
-*/
+
 void set_filters(hid_ffb_t* self, FFB_Effect *effect){
     EffectsCalculator_setFilters(&self->effectsCalculator, effect);
 }
-/*
 
-void set_constant_effect(FFB_SetConstantForce_Data_t* effect){
-    effects[effect->effectBlockIndex-1].magnitude = effect->magnitude;
-}*/
+void set_constant_effect(hid_ffb_t* self, FFB_SetConstantForce_Data_t* effect){
+    self->effects[effect->effectBlockIndex-1].magnitude = effect->magnitude;
+}
+
 uint8_t find_free_effect(hid_ffb_t* self, uint8_t type){ //Will return the first effect index which is empty or the same type
     for(uint8_t i=0;i<MAX_EFFECTS;i++){
         if(self->effects[i].type == FFB_EFFECT_NONE){
@@ -132,13 +129,12 @@ void set_effect(hid_ffb_t* self, FFB_SetEffect_t* effect){
     //sendStatusReport(effect->effectBlockIndex);
 }
 
-/*
-void set_condition(FFB_SetCondition_Data_t *cond){
+void set_condition(hid_ffb_t* self, FFB_SetCondition_Data_t *cond){
     uint8_t axis = cond->parameterBlockOffset;
     if (axis >= MAX_AXIS){
         return; // sanity check!
     }
-    FFB_Effect *effect = &effects[cond->effectBlockIndex - 1];
+    FFB_Effect *effect = &self->effects[cond->effectBlockIndex - 1];
     effect->conditions[axis].cpOffset = cond->cpOffset;
     effect->conditions[axis].negativeCoefficient = cond->negativeCoefficient;
     effect->conditions[axis].positiveCoefficient = cond->positiveCoefficient;
@@ -153,7 +149,7 @@ void set_condition(FFB_SetCondition_Data_t *cond){
         effect->conditions[axis].negativeSaturation = 0x7FFF;
     }
 }
-*/
+
 void set_envelope(hid_ffb_t* self, FFB_SetEnvelope_Data_t *report){
     FFB_Effect *effect = &self->effects[report->effectBlockIndex - 1];
 
@@ -180,18 +176,15 @@ void set_periodic(hid_ffb_t* self, FFB_SetPeriodic_Data_t* report){
     effect->phase = report->phase;
     //effect->counter = 0;
 }
-/*
 
-
-void reset_ffb(){
+void reset_ffb(hid_ffb_t* self){
     for(uint8_t i=0;i<MAX_EFFECTS;i++){
-        free_effect(i);
+        free_effect(self, i);
     }
-    this->reportFFBStatus.effectBlockIndex = 1;
-    this->reportFFBStatus.status = (HID_ACTUATOR_POWER) | (HID_ENABLE_ACTUATORS);
-    used_effects = 0;
+    self->reportFFBStatus.effectBlockIndex = 1;
+    self->reportFFBStatus.status = (HID_ACTUATOR_POWER) | (HID_ENABLE_ACTUATORS);
+    self->used_effects = 0;
 }
-*/
 
 uint16_t hidGet(uint8_t report_id, hid_report_type_t report_type,uint8_t* buffer, uint16_t reqlen){
     char buf[] = "hidGet\r\n";
@@ -223,11 +216,7 @@ void stop_FFB() {
 
 }
 
-void reset_ffb() {
-
-}
-
-void ffb_control(uint8_t cmd){
+void ffb_control(hid_ffb_t* self, uint8_t cmd){
     //printf("Got Control signal: %d\n",cmd);
     if(cmd & 0x01){ //enable
         start_FFB();
@@ -239,7 +228,7 @@ void ffb_control(uint8_t cmd){
     }if(cmd & 0x08){ //reset
         //ffb_active = true;
         stop_FFB();
-        reset_ffb();
+        reset_ffb(self);
         // reset effects
     }if(cmd & 0x10){ //pause
         stop_FFB();
@@ -264,7 +253,7 @@ void hidOut(uint8_t report_id, hid_report_type_t report_type, uint8_t const* buf
             set_effect(&hid_ffb, (FFB_SetEffect_t*)(report));
             break;
         case HID_ID_CTRLREP: // Control report. 1=Enable Actuators, 2=Disable Actuators, 4=Stop All Effects, 8=Reset, 16=Pause, 32=Continue
-            ffb_control(report[1]);
+            ffb_control(&hid_ffb, report[1]);
             sendStatusReport(&hid_ffb, 0);
             break;
         case HID_ID_GAINREP: // Set global gain
@@ -274,13 +263,13 @@ void hidOut(uint8_t report_id, hid_report_type_t report_type, uint8_t const* buf
             set_envelope(&hid_ffb, (FFB_SetEnvelope_Data_t *)report);
             break;
         case HID_ID_CONDREP: // Spring, Damper, Friction, Inertia
-            //set_condition((FFB_SetCondition_Data_t*)report);
+            set_condition(&hid_ffb, (FFB_SetCondition_Data_t*)report);
             break;
         case HID_ID_PRIDREP: // Periodic
             set_periodic(&hid_ffb, (FFB_SetPeriodic_Data_t*)report);
             break;
         case HID_ID_CONSTREP: // Constant
-            //set_constant_effect((FFB_SetConstantForce_Data_t*)report);
+            set_constant_effect(&hid_ffb, (FFB_SetConstantForce_Data_t*)report);
             break;
         case HID_ID_RAMPREP: // Ramp
             set_ramp(&hid_ffb, (FFB_SetRamp_Data_t *)report);
@@ -312,7 +301,7 @@ void hidOut(uint8_t report_id, hid_report_type_t report_type, uint8_t const* buf
         }
         case HID_ID_BLKFRREP: // Free a block
         {
-            //free_effect(report[1]-1);
+            free_effect(&hid_ffb, report[1]-1);
             break;
         }
 

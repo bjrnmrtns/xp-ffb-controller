@@ -233,4 +233,24 @@ typedef struct
     uint16_t endLevel;
 } __attribute__((packed)) FFB_SetRamp_Data_t;
 
+typedef struct
+{
+    uint8_t		reportId;
+    uint8_t		effectBlockIndex;	// 1..max_effects
+    uint8_t		parameterBlockOffset;	// bits: 0..3=parameterBlockOffset, 4..5=instance1, 6..7=instance2
+    int16_t  	cpOffset;	// Center
+    int16_t		positiveCoefficient; // Scaler for positive range
+    int16_t		negativeCoefficient;
+    uint16_t	positiveSaturation;	// Clipping point for positive range
+    uint16_t	negativeSaturation;
+    uint16_t	deadBand;
+} __attribute__((packed)) FFB_SetCondition_Data_t;
+
+typedef struct
+{
+    uint8_t	reportId;
+    uint8_t	effectBlockIndex;	// 1..max_effects
+    int16_t magnitude;	// High res intensity
+} __attribute__((packed)) FFB_SetConstantForce_Data_t;
+
 #endif /* SRC_FFB_DESCRIPTOR_H_ */
