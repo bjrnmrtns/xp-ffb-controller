@@ -3,21 +3,21 @@
 #include <math.h>
 #define CLIP(x, upper, lower) (fmin(upper, fmax(x, lower)))
 
-void biquad_init_default(struct Biquad* self) {
+void biquad_init_default(Biquad* self) {
     self->z1 = self->z2 = 0.0;
 }
-void biquad_init(struct Biquad* self, enum BiquadType type, float Fc, float Q, float peakGain) {
+void biquad_init(Biquad* self, BiquadType type, float Fc, float Q, float peakGain) {
     setBiquad(self, type, Fc, Q, peakGain);
 }
 
-float biquad_process(struct Biquad* self, float in) {
+float biquad_process(Biquad* self, float in) {
     float out = in * self->a0 + self->z1;
     self->z1 = in * self->a1 + self->z2 - self->b1 * out;
     self->z2 = in * self->a2 - self->b2 * out;
     return out;
 }
 
-void setBiquad(struct Biquad* self, enum BiquadType type, float Fc, float Q, float peakGain) {
+void setBiquad(Biquad* self, BiquadType type, float Fc, float Q, float peakGain) {
     self->Fc = CLIP(Fc,0,0.5);
     self->type = type;
     self->Q = Q;
@@ -26,18 +26,18 @@ void setBiquad(struct Biquad* self, enum BiquadType type, float Fc, float Q, flo
     calcBiquad(&self);
 }
 
-void setFc(struct Biquad* self, float Fc) {
+void setFc(Biquad* self, float Fc) {
     Fc = CLIP(Fc,0,0.5);
     self->Fc = Fc;
     calcBiquad(self);
 }
 
-void setQ(struct Biquad* self, float Q) {
+void setQ(Biquad* self, float Q) {
     self->Q = Q;
     calcBiquad(self);
 }
 
-void calcBiquad(struct Biquad* self) {
+void calcBiquad(Biquad* self) {
     self->z1 = 0.0;
     self->z2 = 0.0;
     float norm;

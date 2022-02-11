@@ -44,6 +44,7 @@ add_executable(stm32-tinyusb.elf
     src/biquad.c
     src/ffb_descriptor.c
     src/ffb_effects.c
+    src/ffb_effects_calc.c
     src/usb_callbacks.c
 
     tinyusb/src/host/hub.c

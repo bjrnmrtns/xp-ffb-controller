@@ -1,7 +1,7 @@
 #pragma once
 
 #include "stdint.h"
-enum BiquadType {
+typedef enum {
     lowpass = 0,
     highpass,
     bandpass,
@@ -9,19 +9,19 @@ enum BiquadType {
     peak,
     lowshelf,
     highshelf
-};
+} BiquadType;
 
-struct Biquad {
-    enum BiquadType type;
+typedef struct {
+    BiquadType type;
     float a0, a1, a2, b1, b2;
     float Fc, Q, peakGain;
     float z1, z2;
-};
+} Biquad;
 
-void biquad_init(struct Biquad* self, enum BiquadType type, float Fc, float Q, float peakGainDB);
-void biquad_deinit(struct Biquad* self);
-float biquad_process(struct Biquad* self, float in);
-void setBiquad(struct Biquad* self, enum BiquadType type, float Fc, float Q, float peakGain);
-void setFc(struct Biquad* self, float Fc); //frequency
-void setQ(struct Biquad* self, float Q);
-void calcBiquad(struct Biquad* self);
+void biquad_init(Biquad* self, BiquadType type, float Fc, float Q, float peakGainDB);
+void biquad_deinit(Biquad* self);
+float biquad_process(Biquad* self, float in);
+void setBiquad(Biquad* self, BiquadType type, float Fc, float Q, float peakGain);
+void setFc(Biquad* self, float Fc); //frequency
+void setQ(Biquad* self, float Q);
+void calcBiquad(Biquad* self);
