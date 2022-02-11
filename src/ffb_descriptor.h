@@ -205,4 +205,32 @@ typedef struct
 } __attribute__((packed)) FFB_SetEffect_t;
 void FFB_SetEffect_t_init(FFB_SetEffect_t* self);
 
+typedef struct
+{
+    uint8_t	reportId;
+    uint8_t	effectBlockIndex;
+    uint16_t magnitude;
+    int16_t	offset;
+    uint16_t	phase;	// degrees
+    uint32_t	period;	// 0..32767 ms
+} __attribute__((packed)) FFB_SetPeriodic_Data_t;
+
+typedef struct
+{
+    uint8_t reportId;
+    uint8_t effectBlockIndex;
+    uint16_t attackLevel;
+    uint16_t fadeLevel;
+    uint32_t attackTime;
+    uint32_t fadeTime;
+} __attribute__((packed)) FFB_SetEnvelope_Data_t;
+
+typedef struct
+{
+    uint8_t reportId;
+    uint8_t effectBlockIndex;
+    uint16_t startLevel;
+    uint16_t endLevel;
+} __attribute__((packed)) FFB_SetRamp_Data_t;
+
 #endif /* SRC_FFB_DESCRIPTOR_H_ */

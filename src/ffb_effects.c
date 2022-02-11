@@ -1,5 +1,6 @@
 #include "ffb_effects.h"
 #include "ffb_descriptor.h"
+#include "ffb_math.h"
 
 #include <stdint.h>
 #include "stm32f3xx_hal.h"
@@ -60,7 +61,7 @@ void free_effect(uint16_t idx){
 }
 */
 void set_gain(hid_ffb_t* self, uint8_t gain){
-    EffectsCalculator_setGain(self, gain);
+    EffectsCalculator_setGain(&self->effectsCalculator, gain);
 }
 /*
 */
@@ -152,9 +153,9 @@ void set_condition(FFB_SetCondition_Data_t *cond){
         effect->conditions[axis].negativeSaturation = 0x7FFF;
     }
 }
-
-void set_envelope(FFB_SetEnvelope_Data_t *report){
-    FFB_Effect *effect = &effects[report->effectBlockIndex - 1];
+*/
+void set_envelope(hid_ffb_t* self, FFB_SetEnvelope_Data_t *report){
+    FFB_Effect *effect = &self->effects[report->effectBlockIndex - 1];
 
     effect->attackLevel = report->attackLevel;
     effect->attackTime = report->attackTime;
@@ -162,23 +163,23 @@ void set_envelope(FFB_SetEnvelope_Data_t *report){
     effect->fadeTime = report->fadeTime;
     effect->useEnvelope = true;
 }
-void set_ramp(FFB_SetRamp_Data_t *report){
-    FFB_Effect *effect = &effects[report->effectBlockIndex - 1];
+
+void set_ramp(hid_ffb_t* self, FFB_SetRamp_Data_t *report){
+    FFB_Effect *effect = &self->effects[report->effectBlockIndex - 1];
     effect->magnitude = 0x7fff; // Full magnitude for envelope calculation. This effect does not have a periodic report
     effect->startLevel = report->startLevel;
     effect->endLevel = report->endLevel;
 }
 
-void set_periodic(FFB_SetPeriodic_Data_t* report){
-    FFB_Effect* effect = &effects[report->effectBlockIndex-1];
+void set_periodic(hid_ffb_t* self, FFB_SetPeriodic_Data_t* report){
+    FFB_Effect* effect = &self->effects[report->effectBlockIndex-1];
 
-    effect->period = clip<uint32_t,uint32_t>(report->period,1,0x7fff); // Period is never 0
+    effect->period = clip_u(report->period,1,0x7fff); // Period is never 0
     effect->magnitude = report->magnitude;
     effect->offset = report->offset;
     effect->phase = report->phase;
     //effect->counter = 0;
 }
-*/
 /*
 
 
@@ -270,19 +271,19 @@ void hidOut(uint8_t report_id, hid_report_type_t report_type, uint8_t const* buf
             set_gain(&hid_ffb, report[1]);
             break;
         case HID_ID_ENVREP: // Envelope
-            //set_envelope((FFB_SetEnvelope_Data_t *)report);
+            set_envelope(&hid_ffb, (FFB_SetEnvelope_Data_t *)report);
             break;
         case HID_ID_CONDREP: // Spring, Damper, Friction, Inertia
             //set_condition((FFB_SetCondition_Data_t*)report);
             break;
         case HID_ID_PRIDREP: // Periodic
-            //set_periodic((FFB_SetPeriodic_Data_t*)report);
+            set_periodic(&hid_ffb, (FFB_SetPeriodic_Data_t*)report);
             break;
         case HID_ID_CONSTREP: // Constant
             //set_constant_effect((FFB_SetConstantForce_Data_t*)report);
             break;
         case HID_ID_RAMPREP: // Ramp
-            //set_ramp((FFB_SetRamp_Data_t *)report);
+            set_ramp(&hid_ffb, (FFB_SetRamp_Data_t *)report);
             break;
         case HID_ID_CSTMREP: // Custom. pretty much never used
             //printf("Customrep");

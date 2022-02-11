@@ -1,7 +1,8 @@
 #include "biquad.h"
 
 #include <math.h>
-#define CLIP(x, upper, lower) (fmin(upper, fmax(x, lower)))
+
+#include "ffb_math.h"
 
 void biquad_init_none(Biquad* self) {
     self->opt = opt_none;
@@ -24,7 +25,7 @@ float biquad_process(Biquad* self, float in) {
 
 void setBiquad(Biquad* self, BiquadType type, float Fc, float Q, float peakGain) {
     self->opt = opt_some;
-    self->Fc = CLIP(Fc,0,0.5);
+    self->Fc = clip_f(Fc,0,0.5);
     self->type = type;
     self->Q = Q;
     self->Fc = Fc;
@@ -33,7 +34,7 @@ void setBiquad(Biquad* self, BiquadType type, float Fc, float Q, float peakGain)
 }
 
 void setFc(Biquad* self, float Fc) {
-    Fc = CLIP(Fc,0,0.5);
+    Fc = clip_f(Fc,0,0.5);
     self->Fc = Fc;
     calcBiquad(self);
 }
