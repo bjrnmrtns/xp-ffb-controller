@@ -10,7 +10,7 @@ set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 #set(CMAKE_C_EXTENSIONS OFF)
 
-add_executable(stm32-tinyusb
+add_executable(stm32-tinyusb.elf
     Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_ll_usb.c
     Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_flash.c
     Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_uart_ex.c
@@ -35,12 +35,14 @@ add_executable(stm32-tinyusb
     Core/Src/stm32f3xx_it.c
     Core/Src/stm32f3xx_hal_msp.c
     Core/Src/syscalls.c
-    Core/Src/ffb_descriptor.c
     Core/Src/system_stm32f3xx.c
     Core/Src/main.c
     Core/Src/sysmem.c
 
     Core/Startup/startup_stm32f303vctx.s
+
+    src/ffb_descriptor.c
+    src/usb_callbacks.c
 
     tinyusb/src/host/hub.c
     tinyusb/src/host/usbh.c
@@ -107,12 +109,12 @@ add_executable(stm32-tinyusb
     tinyusb/src/tusb.c
 )
 
-target_compile_definitions(stm32-tinyusb PRIVATE
+target_compile_definitions(stm32-tinyusb.elf PRIVATE
     -DUSE_HAL_DRIVER
     -DSTM32F303xC
 )
 
-target_include_directories(stm32-tinyusb PRIVATE
+target_include_directories(stm32-tinyusb.elf PRIVATE
     Core/Inc
     Drivers/CMSIS/Device/ST/STM32F3xx/Include
     Drivers/CMSIS/Include
@@ -121,7 +123,7 @@ target_include_directories(stm32-tinyusb PRIVATE
     tinyusb/src
 )
 
-target_compile_options(stm32-tinyusb PRIVATE
+target_compile_options(stm32-tinyusb.elf PRIVATE
     -mcpu=cortex-m4
     -specs=nosys.specs
     -mthumb
@@ -134,7 +136,7 @@ target_compile_options(stm32-tinyusb PRIVATE
     $<$<CONFIG:Debug>:-Og>
 )
 
-target_link_options(stm32-tinyusb PRIVATE
+target_link_options(stm32-tinyusb.elf PRIVATE
     -T${CMAKE_SOURCE_DIR}/STM32F303VCTX_FLASH.ld
     -mcpu=cortex-m4
     -mthumb
@@ -149,11 +151,11 @@ target_link_options(stm32-tinyusb PRIVATE
     -Wl,--gc-sections -static
 )
 
-add_custom_command(TARGET stm32-tinyusb
+add_custom_command(TARGET stm32-tinyusb.elf
         POST_BUILD
-        COMMAND arm-none-eabi-size stm32-tinyusb)
+        COMMAND arm-none-eabi-size stm32-tinyusb.elf)
 
-add_custom_command(TARGET stm32-tinyusb
+add_custom_command(TARGET stm32-tinyusb.elf
         POST_BUILD
-        COMMAND arm-none-eabi-objcopy -O ihex stm32-tinyusb ${PROJECT_NAME}.hex
-        COMMAND arm-none-eabi-objcopy -O binary stm32-tinyusb ${PROJECT_NAME}.bin)
+        COMMAND arm-none-eabi-objcopy -O ihex stm32-tinyusb.elf stm32-tinyusb.hex
+        COMMAND arm-none-eabi-objcopy -O binary stm32-tinyusb.elf stm32-tinyusb.bin)
