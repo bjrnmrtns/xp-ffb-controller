@@ -29,25 +29,25 @@ void hid_ffb_t_init(hid_ffb_t* self) {
 }
 
 
-/*bool HID_SendReport(uint8_t *report, uint16_t len){
+bool HID_SendReport(uint8_t *report, uint16_t len){
     return tud_hid_report(0, report, len);
 }
 
-void sendStatusReport(uint8_t effect){
-    this->reportFFBStatus.effectBlockIndex = effect;
-    this->reportFFBStatus.status = HID_ACTUATOR_POWER;
-    if(this->ffb_active){
-        this->reportFFBStatus.status |= HID_ENABLE_ACTUATORS;
-        this->reportFFBStatus.status |= HID_EFFECT_PLAYING;
+void sendStatusReport(hid_ffb_t* self, uint8_t effect){
+    self->reportFFBStatus.effectBlockIndex = effect;
+    self->reportFFBStatus.status = HID_ACTUATOR_POWER;
+    if(self->ffb_active){
+        self->reportFFBStatus.status |= HID_ENABLE_ACTUATORS;
+        self->reportFFBStatus.status |= HID_EFFECT_PLAYING;
     }else{
-        this->reportFFBStatus.status |= HID_EFFECT_PAUSE;
+        self->reportFFBStatus.status |= HID_EFFECT_PAUSE;
     }
-    if(effect > 0 && effects[effect-1].state == 1)
-        this->reportFFBStatus.status |= HID_EFFECT_PLAYING;
+    if(effect > 0 && self->effects[effect-1].state == 1)
+        self->reportFFBStatus.status |= HID_EFFECT_PLAYING;
     //printf("Status: %d\n",reportFFBStatus.status);
-    HID_SendReport(reinterpret_cast<uint8_t*>(&this->reportFFBStatus), sizeof(reportFFB_status_t));
+    HID_SendReport((uint8_t*)(&self->reportFFBStatus), sizeof(reportFFB_status_t));
 }
-
+/*
 void free_effect(uint16_t idx){
     if(idx < MAX_EFFECTS){
         effects[idx].type=FFB_EFFECT_NONE;
@@ -214,6 +214,39 @@ uint16_t hidGet(uint8_t report_id, hid_report_type_t report_type,uint8_t* buffer
     return 0;
 }
 
+void start_FFB() {
+
+}
+
+void stop_FFB() {
+
+}
+
+void reset_ffb() {
+
+}
+
+void ffb_control(uint8_t cmd){
+    //printf("Got Control signal: %d\n",cmd);
+    if(cmd & 0x01){ //enable
+        start_FFB();
+    }if(cmd & 0x02){ //disable
+        stop_FFB();
+    }if(cmd & 0x04){ //stop TODO Some games send wrong commands?
+        stop_FFB();
+        //start_FFB();
+    }if(cmd & 0x08){ //reset
+        //ffb_active = true;
+        stop_FFB();
+        reset_ffb();
+        // reset effects
+    }if(cmd & 0x10){ //pause
+        stop_FFB();
+    }if(cmd & 0x20){ //continue
+        start_FFB();
+    }
+}
+
 void hidOut(uint8_t report_id, hid_report_type_t report_type, uint8_t const* buffer, uint16_t bufsize) {
     char buf[] = "hidOut\r\n";
     HAL_UART_Transmit(&huart1, &buf[0], strlen(buf), 10);
@@ -230,8 +263,8 @@ void hidOut(uint8_t report_id, hid_report_type_t report_type, uint8_t const* buf
             set_effect(&hid_ffb, (FFB_SetEffect_t*)(report));
             break;
         case HID_ID_CTRLREP: // Control report. 1=Enable Actuators, 2=Disable Actuators, 4=Stop All Effects, 8=Reset, 16=Pause, 32=Continue
-            //ffb_control(report[1]);
-            //sendStatusReport(0);
+            ffb_control(report[1]);
+            sendStatusReport(&hid_ffb, 0);
             break;
         case HID_ID_GAINREP: // Set global gain
             //set_gain(report[1]);
