@@ -45,6 +45,7 @@ add_executable(stm32-tinyusb.elf
     src/ffb_descriptor.c
     src/ffb_effects.c
     src/ffb_effects_calc.c
+    src/ffb_main.c
     src/usb_callbacks.c
 
     tinyusb/src/host/hub.c
@@ -124,6 +125,7 @@ target_include_directories(stm32-tinyusb.elf PRIVATE
     Drivers/STM32F3xx_HAL_Driver/Inc
     Drivers/STM32F3xx_HAL_Driver/Inc/Legacy
     tinyusb/src
+    include
 )
 
 target_compile_options(stm32-tinyusb.elf PRIVATE

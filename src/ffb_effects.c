@@ -9,20 +9,47 @@
 
 extern UART_HandleTypeDef huart1;
 
-FFB_BlockLoad_Feature_Data_t blockLoad_report =
-        {
-                .reportId = HID_ID_BLKLDREP,
-        };
-
-FFB_PIDPool_Feature_Data_t pool_report =
-        {
-                .reportId = HID_ID_POOLREP,
-                .ramPoolSize = MAX_EFFECTS,
-                .maxSimultaneousEffects = MAX_EFFECTS,
-                .memoryManagement = 1,	// 0=DeviceManagedPool, 1=SharedParameterBlocks
-        };
-
+FFB_BlockLoad_Feature_Data_t blockLoad_report;
+FFB_PIDPool_Feature_Data_t pool_report;
 FFB_Effect effects[MAX_EFFECTS];
+
+void ffb_effects_init() {
+    FFB_BlockLoad_Feature_Data_t_init(&blockLoad_report);
+    FFB_PIDPool_Feature_Data_t_init(&pool_report);
+    for(size_t i = 0; i < MAX_EFFECTS; i++) {
+        FFB_Effect_init(&effects[i]);
+    }
+}
+
+void FFB_Effect_init(FFB_Effect* self) {
+    self->state = 0;
+    self->type = FFB_EFFECT_NONE; // Type
+    self->offset = 0;				// Center point
+    self->gain = 255;				// Scaler. often unused
+    self->magnitude = 0;			// High res intensity of effect
+    self->startLevel = 0;			// Ramp effect
+    self->endLevel = 0;			// Ramp effect
+    self->enableAxis = 0;			// Active axis
+    self->directionX = 0;		// angle (0=0 .. 36000=360deg)
+    self->directionY = 0;		// angle (0=0 .. 36000=360deg)
+#if MAX_AXIS == 3
+    self->directionZ = 0; // angle (0=0 .. 255=360deg)
+#endif
+    self->conditionsCount = 0;
+    self->phase = 0;
+    self->period = 0;
+    self->duration = 0;					 // Duration in ms
+    self->attackLevel = 0, self->fadeLevel = 0; // Envelope effect
+    self->attackTime = 0, self->fadeTime = 0;	 // Envelope effect
+
+    for(size_t i = 0; i < MAX_AXIS; i++) {
+        self->filter[i] = 0;
+    }
+    self->startDelay = 0;
+    self->startTime = 0;	  // Elapsed time in ms before effect starts
+    self->samplePeriod = 0;
+    self->useEnvelope = 0;
+}
 
 /*bool HID_SendReport(uint8_t *report, uint16_t len){
     return tud_hid_report(0, report, len);

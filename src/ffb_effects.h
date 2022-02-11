@@ -18,6 +18,40 @@ typedef struct
 
 } __attribute__((packed)) HID_CMD_Data_t;
 
+// Internal struct for storing effects
+typedef struct
+{
+    volatile uint8_t state;
+    uint8_t type; // Type
+    int16_t offset;				// Center point
+    uint8_t gain;				// Scaler. often unused
+    int16_t magnitude;			// High res intensity of effect
+    int16_t startLevel;			// Ramp effect
+    int16_t endLevel;			// Ramp effect
+    uint8_t enableAxis;			// Active axis
+    uint16_t directionX;		// angle (0=0 .. 36000=360deg)
+    uint16_t directionY;		// angle (0=0 .. 36000=360deg)
+#if MAX_AXIS == 3
+    uint8_t directionZ; // angle (0=0 .. 255=360deg)
+#endif
+    uint8_t conditionsCount;
+    FFB_Effect_Condition conditions[MAX_AXIS];
+    int16_t phase;
+    uint16_t period;
+    uint32_t duration;					 // Duration in ms
+    uint16_t attackLevel, fadeLevel; // Envelope effect
+    uint32_t attackTime, fadeTime;	 // Envelope effect
+
+    Biquad* filter[MAX_AXIS];  // Optional filter
+    uint16_t startDelay;
+    uint32_t startTime;	  // Elapsed time in ms before effect starts
+    uint16_t samplePeriod;
+    int useEnvelope;
+} FFB_Effect;
+void FFB_Effect_init(FFB_Effect* self);
+
+void ffb_effects_init();
+
 uint16_t hidGet(uint8_t report_id, hid_report_type_t report_type,uint8_t* buffer, uint16_t reqlen);
 void hidOut(uint8_t report_id, hid_report_type_t report_type, uint8_t const* buffer, uint16_t bufsize);
 void hidCmdCallback(HID_CMD_Data_t* data);

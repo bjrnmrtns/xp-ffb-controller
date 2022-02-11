@@ -22,6 +22,8 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "tusb.h"
+
+#include "ffb_main.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -90,7 +92,7 @@ int main(void)
   MX_USART1_UART_Init();
   MX_USB_PCD_Init();
   /* USER CODE BEGIN 2 */
-  if(!tusb_init()) {
+  if(!ffb_init()) {
 	  Error_Handler();
   }
   /* USER CODE END 2 */
@@ -101,7 +103,7 @@ int main(void)
   HAL_UART_Transmit(&huart1, &buffer[0], strlen(buffer), 10);
   while (1)
   {
-	tud_task();
+      ffb_main();
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

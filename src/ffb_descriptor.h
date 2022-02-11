@@ -1,6 +1,8 @@
 #ifndef SRC_FFB_DESCRIPTOR_H_
 #define SRC_FFB_DESCRIPTOR_H_
 
+#include "biquad.h"
+
 #include <stdint.h>
 
 #define USB_HID_FFB_REPORT_DESC_SIZE 1229//1378
@@ -99,13 +101,16 @@ typedef struct
 	uint16_t	ramPoolAvailable;
 } __attribute__((packed)) FFB_BlockLoad_Feature_Data_t;
 
+void FFB_BlockLoad_Feature_Data_t_init(FFB_BlockLoad_Feature_Data_t* self);
+
 typedef struct
 {
 	uint8_t	reportId;// = HID_ID_POOLREP;
 	uint16_t	ramPoolSize;// = MAX_EFFECTS;
 	uint8_t		maxSimultaneousEffects;// = MAX_EFFECTS;
-	uint8_t		memoryManagement// = 1;	// 0=DeviceManagedPool, 1=SharedParameterBlocks
+	uint8_t		memoryManagement;// = 1;	// 0=DeviceManagedPool, 1=SharedParameterBlocks
 } __attribute__((packed)) FFB_PIDPool_Feature_Data_t;
+void FFB_PIDPool_Feature_Data_t_init(FFB_PIDPool_Feature_Data_t* self);
 
 typedef struct
 {
@@ -117,37 +122,6 @@ typedef struct
     uint16_t deadBand;
 
 } __attribute__((packed)) FFB_Effect_Condition;
-
-// Internal struct for storing effects
-typedef struct
-{
-    volatile uint8_t state;
-    uint8_t type; // Type
-    int16_t offset;				// Center point
-    uint8_t gain;				// Scaler. often unused
-    int16_t magnitude;			// High res intensity of effect
-    int16_t startLevel;			// Ramp effect
-    int16_t endLevel;			// Ramp effect
-    uint8_t enableAxis;			// Active axis
-    uint16_t directionX;		// angle (0=0 .. 36000=360deg)
-    uint16_t directionY;		// angle (0=0 .. 36000=360deg)
-#if MAX_AXIS == 3
-    uint8_t directionZ; // angle (0=0 .. 255=360deg)
-#endif
-    uint8_t conditionsCount;
-    FFB_Effect_Condition conditions[MAX_AXIS];
-    int16_t phase;
-    uint16_t period;
-    uint32_t duration;					 // Duration in ms
-    uint16_t attackLevel, fadeLevel; // Envelope effect
-    uint32_t attackTime, fadeTime;	 // Envelope effect
-
-    //std::unique_ptr<Biquad> filter[MAX_AXIS];  // Optional filter
-    uint16_t startDelay;
-    uint32_t startTime;	  // Elapsed time in ms before effect starts
-    uint16_t samplePeriod;
-    int useEnvelope;
-} FFB_Effect;
 
 typedef struct
 {

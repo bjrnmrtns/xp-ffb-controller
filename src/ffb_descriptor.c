@@ -774,3 +774,13 @@ __ALIGN_BEGIN const uint8_t hid_ffb_desc[USB_HID_FFB_REPORT_DESC_SIZE] __ALIGN_E
 
   0xC0    /*     END_COLLECTION	             */
 };
+
+void FFB_BlockLoad_Feature_Data_t_init(FFB_BlockLoad_Feature_Data_t* self) {
+    self->reportId = HID_ID_BLKLDREP;
+}
+void FFB_PIDPool_Feature_Data_t_init(FFB_PIDPool_Feature_Data_t* self) {
+    self->reportId = HID_ID_POOLREP;
+    self->ramPoolSize = MAX_EFFECTS;
+    self->maxSimultaneousEffects = MAX_EFFECTS;
+    self->memoryManagement = 1;	// 0=DeviceManagedPool, 1=SharedParameterBlocks
+}
