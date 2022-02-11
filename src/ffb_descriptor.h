@@ -9,6 +9,7 @@ extern const uint8_t hid_ffb_desc[USB_HID_FFB_REPORT_DESC_SIZE];
 
 #define FFB_ID_OFFSET 0x00
 #define MAX_EFFECTS 40
+#define MAX_AXIS 2
 
 // HID Descriptor definitions - Axes
 #define HID_USAGE_X		0x30
@@ -106,5 +107,53 @@ typedef struct
 	uint8_t		memoryManagement// = 1;	// 0=DeviceManagedPool, 1=SharedParameterBlocks
 } __attribute__((packed)) FFB_PIDPool_Feature_Data_t;
 
+typedef struct
+{
+    int16_t cpOffset;
+    int16_t positiveCoefficient;
+    int16_t negativeCoefficient;
+    uint16_t positiveSaturation;
+    uint16_t negativeSaturation;
+    uint16_t deadBand;
+
+} __attribute__((packed)) FFB_Effect_Condition;
+
+// Internal struct for storing effects
+typedef struct
+{
+    volatile uint8_t state;
+    uint8_t type; // Type
+    int16_t offset;				// Center point
+    uint8_t gain;				// Scaler. often unused
+    int16_t magnitude;			// High res intensity of effect
+    int16_t startLevel;			// Ramp effect
+    int16_t endLevel;			// Ramp effect
+    uint8_t enableAxis;			// Active axis
+    uint16_t directionX;		// angle (0=0 .. 36000=360deg)
+    uint16_t directionY;		// angle (0=0 .. 36000=360deg)
+#if MAX_AXIS == 3
+    uint8_t directionZ; // angle (0=0 .. 255=360deg)
+#endif
+    uint8_t conditionsCount;
+    FFB_Effect_Condition conditions[MAX_AXIS];
+    int16_t phase;
+    uint16_t period;
+    uint32_t duration;					 // Duration in ms
+    uint16_t attackLevel, fadeLevel; // Envelope effect
+    uint32_t attackTime, fadeTime;	 // Envelope effect
+
+    //std::unique_ptr<Biquad> filter[MAX_AXIS];  // Optional filter
+    uint16_t startDelay;
+    uint32_t startTime;	  // Elapsed time in ms before effect starts
+    uint16_t samplePeriod;
+    int useEnvelope;
+} FFB_Effect;
+
+typedef struct
+{
+    uint8_t		reportId;
+    uint8_t	effectType;	// Effect type ID
+    uint16_t	byteCount;	// Size of custom effects
+} __attribute__((packed)) FFB_CreateNewEffect_Feature_Data_t;
 
 #endif /* SRC_FFB_DESCRIPTOR_H_ */

@@ -5,6 +5,8 @@
 #include "stm32f3xx_hal.h"
 #include "tusb.h"
 
+#define MAX_EFFECTS 40
+
 extern UART_HandleTypeDef huart1;
 
 FFB_BlockLoad_Feature_Data_t blockLoad_report =
@@ -19,6 +21,8 @@ FFB_PIDPool_Feature_Data_t pool_report =
                 .maxSimultaneousEffects = MAX_EFFECTS,
                 .memoryManagement = 1,	// 0=DeviceManagedPool, 1=SharedParameterBlocks
         };
+
+FFB_Effect effects[MAX_EFFECTS];
 
 /*bool HID_SendReport(uint8_t *report, uint16_t len){
     return tud_hid_report(0, report, len);
@@ -63,8 +67,15 @@ void set_filters(FFB_Effect *effect){
 void set_constant_effect(FFB_SetConstantForce_Data_t* effect){
     effects[effect->effectBlockIndex-1].magnitude = effect->magnitude;
 }*/
-/*
-void new_effect(FFB_CreateNewEffect_Feature_Data_t* effect){
+uint8_t find_free_effect(uint8_t type){ //Will return the first effect index which is empty or the same type
+    for(uint8_t i=0;i<MAX_EFFECTS;i++){
+        if(effects[i].type == FFB_EFFECT_NONE){
+            return(i+1);
+        }
+    }
+    return 0;
+}
+/*void new_effect(FFB_CreateNewEffect_Feature_Data_t* effect){
     // Allocates a new effect
 
     uint8_t index = find_free_effect(effect->effectType); // next effect
@@ -86,10 +97,7 @@ void new_effect(FFB_CreateNewEffect_Feature_Data_t* effect){
     used_effects++;
     blockLoad_report.ramPoolAvailable = MAX_EFFECTS-used_effects;
     blockLoad_report.loadStatus = 1;
-
-
-}
- */
+}*/
 /*
 void set_effect(FFB_SetEffect_t* effect){
     uint8_t index = effect->effectBlockIndex;
@@ -167,16 +175,8 @@ void set_periodic(FFB_SetPeriodic_Data_t* report){
     effect->phase = report->phase;
     //effect->counter = 0;
 }
-
-uint8_t find_free_effect(uint8_t type){ //Will return the first effect index which is empty or the same type
-    for(uint8_t i=0;i<MAX_EFFECTS;i++){
-        if(effects[i].type == FFB_EFFECT_NONE){
-            return(i+1);
-        }
-    }
-    return 0;
-}
-
+*/
+/*
 
 
 void reset_ffb(){
