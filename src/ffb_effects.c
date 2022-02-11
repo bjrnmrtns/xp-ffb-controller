@@ -80,29 +80,29 @@ uint8_t find_free_effect(hid_ffb_t* self, uint8_t type){ //Will return the first
     }
     return -1;
 }
-/*
-void new_effect(FFB_CreateNewEffect_Feature_Data_t* effect){
+
+void new_effect(hid_ffb_t* self, FFB_CreateNewEffect_Feature_Data_t* effect){
     // Allocates a new effect
 
-    uint8_t index = find_free_effect(effect->effectType); // next effect
+    uint8_t index = find_free_effect(self, effect->effectType); // next effect
     if(index == -1){
-        blockLoad_report.loadStatus = 2;
+        self->blockLoad_report.loadStatus = 2;
         return;
     }
-    FFB_Effect* new_effect = &effects[index];
+    FFB_Effect* new_effect = &self->effects[index];
     FFB_Effect_init(new_effect);
     new_effect->type = effect->effectType;
-    EffectsCalculator_logEffectType(&effectsCalculator, effect->effectType);
-    set_filters(new_effect);
+    EffectsCalculator_logEffectType(&self->effectsCalculator, effect->effectType);
+    set_filters(self, new_effect);
 
     // Set block load report
-    reportFFBStatus.effectBlockIndex = index + 1;
-    blockLoad_report.effectBlockIndex = index + 1;
-    used_effects++;
-    blockLoad_report.ramPoolAvailable = MAX_EFFECTS-used_effects;
-    blockLoad_report.loadStatus = 1;
+    self->reportFFBStatus.effectBlockIndex = index + 1;
+    self->blockLoad_report.effectBlockIndex = index + 1;
+    self->used_effects++;
+    self->blockLoad_report.ramPoolAvailable = MAX_EFFECTS-self->used_effects;
+    self->blockLoad_report.loadStatus = 1;
 }
- */
+
 /*
 void set_effect(FFB_SetEffect_t* effect){
     uint8_t index = effect->effectBlockIndex;
@@ -226,7 +226,7 @@ void hidOut(uint8_t report_id, hid_report_type_t report_type, uint8_t const* buf
     // -------- Out Reports --------
     switch(event_idx){
         case HID_ID_NEWEFREP: //add Effect Report. Feature
-            //new_effect((FFB_CreateNewEffect_Feature_Data_t*)(report));
+            new_effect(&hid_ffb, (FFB_CreateNewEffect_Feature_Data_t*)(report));
             break;
         case HID_ID_EFFREP: // Set Effect
             //set_effect((FFB_SetEffect_t*)(report));
