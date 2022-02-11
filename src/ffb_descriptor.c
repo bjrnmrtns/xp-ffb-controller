@@ -821,3 +821,21 @@ void reportFFB_status_t_init(reportFFB_status_t* self) {
     self->status = (HID_ACTUATOR_POWER) | (HID_ENABLE_ACTUATORS);	// Bits: 0=Device Paused,1=Actuators Enabled,2=Safety Switch,3=Actuator Power, 4=Effect Playing
 }
 
+void FFB_SetEffect_t_init(FFB_SetEffect_t* self) {
+    self->reportId = 1;
+    self->effectBlockIndex = 0;	// 1..max_effects
+    self->effectType = 0;
+    self->duration = 0; // 0..32767 ms
+    self->triggerRepeatInterval = 0; // 0..32767 ms
+    self->samplePeriod = 0;	// 0..32767 ms
+    self->startDelay = 0;	// 0..32767 ms
+    self->gain = 255;	// 0..255 scaler
+    self->triggerButton = 0;	// button ID. unused
+    self->enableAxis = 0; // bits: 0=X, 1=Y, 2=DirectionEnable
+    self->directionX = 0;	// angle (0=0 .. 36000=360deg)
+    self->directionY = 0;	// angle (0=0 .. 36000=360deg)
+#if MAX_AXIS == 3
+    self->directionZ = 0; // angle (0=0 .. 255=360deg)
+#endif
+}
+

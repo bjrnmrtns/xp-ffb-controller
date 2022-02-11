@@ -185,4 +185,24 @@ typedef struct
 } __attribute__((packed)) reportFFB_status_t;
 void reportFFB_status_t_init(reportFFB_status_t* self);
 
+typedef struct
+{
+    uint8_t		reportId;
+    uint8_t		effectBlockIndex;	// 1..max_effects
+    uint8_t		effectType;
+    uint16_t	duration; // 0..32767 ms
+    uint16_t	triggerRepeatInterval; // 0..32767 ms
+    uint16_t	samplePeriod;	// 0..32767 ms
+    uint16_t	startDelay;	// 0..32767 ms
+    uint8_t		gain;	// 0..255 scaler
+    uint8_t		triggerButton;	// button ID. unused
+    uint8_t		enableAxis; // bits: 0=X, 1=Y, 2=DirectionEnable
+    uint16_t	directionX;	// angle (0=0 .. 36000=360deg)
+    uint16_t	directionY;	// angle (0=0 .. 36000=360deg)
+#if MAX_AXIS == 3
+    uint8_t directionZ = 0; // angle (0=0 .. 255=360deg)
+#endif
+} __attribute__((packed)) FFB_SetEffect_t;
+void FFB_SetEffect_t_init(FFB_SetEffect_t* self);
+
 #endif /* SRC_FFB_DESCRIPTOR_H_ */

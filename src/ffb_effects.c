@@ -75,10 +75,10 @@ void set_constant_effect(FFB_SetConstantForce_Data_t* effect){
 uint8_t find_free_effect(hid_ffb_t* self, uint8_t type){ //Will return the first effect index which is empty or the same type
     for(uint8_t i=0;i<MAX_EFFECTS;i++){
         if(self->effects[i].type == FFB_EFFECT_NONE){
-            return i;
+            return i + 1;
         }
     }
-    return -1;
+    return 0;
 }
 
 void new_effect(hid_ffb_t* self, FFB_CreateNewEffect_Feature_Data_t* effect){
@@ -89,31 +89,30 @@ void new_effect(hid_ffb_t* self, FFB_CreateNewEffect_Feature_Data_t* effect){
         self->blockLoad_report.loadStatus = 2;
         return;
     }
-    FFB_Effect* new_effect = &self->effects[index];
+    FFB_Effect* new_effect = &self->effects[index - 1];
     FFB_Effect_init(new_effect);
     new_effect->type = effect->effectType;
     EffectsCalculator_logEffectType(&self->effectsCalculator, effect->effectType);
     set_filters(self, new_effect);
 
     // Set block load report
-    self->reportFFBStatus.effectBlockIndex = index + 1;
-    self->blockLoad_report.effectBlockIndex = index + 1;
+    self->reportFFBStatus.effectBlockIndex = index;
+    self->blockLoad_report.effectBlockIndex = index;
     self->used_effects++;
     self->blockLoad_report.ramPoolAvailable = MAX_EFFECTS-self->used_effects;
     self->blockLoad_report.loadStatus = 1;
 }
 
-/*
-void set_effect(FFB_SetEffect_t* effect){
+void set_effect(hid_ffb_t* self, FFB_SetEffect_t* effect){
     uint8_t index = effect->effectBlockIndex;
     if(index > MAX_EFFECTS || index == 0)
         return;
 
-    FFB_Effect* effect_p = &effects[index-1];
+    FFB_Effect* effect_p = &self->effects[index-1];
 
     if (effect_p->type != effect->effectType){
         effect_p->startTime = 0;
-        set_filters(effect_p);
+        set_filters(self, effect_p);
     }
 
     effect_p->gain = effect->gain;
@@ -129,11 +128,10 @@ void set_effect(FFB_SetEffect_t* effect){
 
     effect_p->duration = effect->duration;
     effect_p->startDelay = effect->startDelay;
-    if(!ffb_active)
-        start_FFB();
     //sendStatusReport(effect->effectBlockIndex);
 }
 
+/*
 void set_condition(FFB_SetCondition_Data_t *cond){
     uint8_t axis = cond->parameterBlockOffset;
     if (axis >= MAX_AXIS){
@@ -229,7 +227,7 @@ void hidOut(uint8_t report_id, hid_report_type_t report_type, uint8_t const* buf
             new_effect(&hid_ffb, (FFB_CreateNewEffect_Feature_Data_t*)(report));
             break;
         case HID_ID_EFFREP: // Set Effect
-            //set_effect((FFB_SetEffect_t*)(report));
+            set_effect(&hid_ffb, (FFB_SetEffect_t*)(report));
             break;
         case HID_ID_CTRLREP: // Control report. 1=Enable Actuators, 2=Disable Actuators, 4=Stop All Effects, 8=Reset, 16=Pause, 32=Continue
             //ffb_control(report[1]);
