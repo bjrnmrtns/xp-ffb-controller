@@ -42,6 +42,7 @@ add_executable(stm32-tinyusb.elf
     Core/Startup/startup_stm32f303vctx.s
 
     src/ffb_descriptor.c
+    src/ffb_effects.c
     src/usb_callbacks.c
 
     tinyusb/src/host/hub.c

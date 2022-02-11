@@ -1,11 +1,15 @@
 #include "stm32f3xx_hal.h"
 #include "ffb_descriptor.h"
+#include "ffb_effects.h"
 #include "tusb.h"
 
 extern UART_HandleTypeDef huart1;
 
-#define HID_BINTERVAL 0x01 // 1 = 1000hz, 2 = 500hz, 3 = 333hz 4 = 250hz, 5 = 200hz 6 = 166hz, 7 = 125hz...
 #define USB_STRING_DESC_BUF_SIZE 32
+uint16_t _desc_str[USB_STRING_DESC_BUF_SIZE];
+
+
+#define HID_BINTERVAL 0x01 // 1 = 1000hz, 2 = 500hz, 3 = 333hz 4 = 250hz, 5 = 200hz 6 = 166hz, 7 = 125hz...
 #define USBD_VID     0x1209
 #define USBD_PID     0xFFB0
 const tusb_desc_device_t usb_devdesc_ffboard_composite =
@@ -36,30 +40,6 @@ const uint8_t	usb_dev_desc_manufacturer[] = "Open_FFBoard";
 const uint8_t usb_dev_desc_product[] = "FFBoard";
 const uint8_t* usb_dev_desc_interfaces[] = { "FFBoard CDC", "FFBoard HID" };
 
-FFB_BlockLoad_Feature_Data_t blockLoad_report =
-        {
-                .reportId = HID_ID_BLKLDREP,
-        };
-
-FFB_PIDPool_Feature_Data_t pool_report =
-        {
-                .reportId = HID_ID_POOLREP,
-                .ramPoolSize = MAX_EFFECTS,
-                .maxSimultaneousEffects = MAX_EFFECTS,
-                .memoryManagement = 1,	// 0=DeviceManagedPool, 1=SharedParameterBlocks
-        };
-
-uint16_t _desc_str[USB_STRING_DESC_BUF_SIZE];
-
-/*const uint8_t usb_cdc_conf[] =
-{
-  // Config number, interface count, string index, total length, attribute, power in mA
-  TUD_CONFIG_DESCRIPTOR(1, 2, 0, (TUD_CONFIG_DESC_LEN + TUD_CDC_DESC_LEN), TUSB_DESC_CONFIG_ATT_REMOTE_WAKEUP, 100),
-
-  // 1st CDC: Interface number, string index, EP notification address and size, EP data address (out, in) and size.
-  TUD_CDC_DESCRIPTOR(0, 4, 0x82, 8, 0x01, 0x81, 64),
-};
-*/
 // Composite CDC and HID
 const uint8_t usb_cdc_hid_conf[] =
         {
@@ -88,53 +68,6 @@ void tud_cdc_rx_cb(uint8_t itf){
 void tud_cdc_tx_complete_cb(uint8_t itf){
     char buffer[] = "tud_cdc_tx_complete_cb\r\n";
     HAL_UART_Transmit(&huart1, &buffer[0], strlen(buffer), 10);
-}
-
-uint16_t hidGet(uint8_t report_id, hid_report_type_t report_type,uint8_t* buffer, uint16_t reqlen){
-    char buf[] = "hidGet\r\n";
-    HAL_UART_Transmit(&huart1, &buf[0], strlen(buf), 10);
-    uint8_t id = report_id - FFB_ID_OFFSET;
-
-    switch(id){
-        case HID_ID_BLKLDREP:
-            //printf("Get Block Report\n");
-            memcpy(buffer,&blockLoad_report,sizeof(FFB_BlockLoad_Feature_Data_t));
-            return sizeof(FFB_BlockLoad_Feature_Data_t);
-            break;
-        case HID_ID_POOLREP:
-            //printf("Get Pool Report\n");
-            memcpy(buffer,&pool_report,sizeof(FFB_PIDPool_Feature_Data_t));
-            return sizeof(FFB_PIDPool_Feature_Data_t);
-            break;
-        default:
-            break;
-    }
-    return 0;
-}
-
-void hidOut(uint8_t report_id, hid_report_type_t report_type, uint8_t const* buffer, uint16_t bufsize) {
-    char buf[] = "hidOut\r\n";
-    HAL_UART_Transmit(&huart1, &buf[0], strlen(buf), 10);
-}
-
-typedef enum HidCmdType  {write = 0, request = 1, info = 2, writeAddr = 3, requestAddr = 4,ACK = 10, notFound = 13, notification = 14, err = 15} HidCmdType_t;
-
-typedef struct
-{
-    uint8_t		reportId; // Report ID = 0xA1
-    HidCmdType_t type;				// 0x01. Type of report. 0 = write, 1 = request
-    uint16_t	clsid;				// 0x02 Class ID identifies the target class type
-    uint8_t 	instance;			// 0x03 Class instance number to target a specific instance (often 0). 0xff for broadcast to all instances
-    uint32_t	cmd;				// 0x04 Use this as an identifier for the command. upper 16 bits for class type
-    uint64_t	data;				// 0x05 Use this to transfer data or the primary value
-    uint64_t	addr;				// 0x06 Use this to transfer an optional address or second value (CAN for example)
-
-} __attribute__((packed)) HID_CMD_Data_t;
-
-
-void hidCmdCallback(HID_CMD_Data_t* data) {
-    char buf[] = "hidCmdCallback\r\n";
-    HAL_UART_Transmit(&huart1, &buf[0], strlen(buf), 10);
 }
 
 void tud_hid_set_report_cb(uint8_t itf, uint8_t report_id, hid_report_type_t report_type, uint8_t const* buffer, uint16_t bufsize){
