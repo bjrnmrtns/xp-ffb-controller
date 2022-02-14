@@ -208,32 +208,24 @@ uint16_t hidGet(uint8_t report_id, hid_report_type_t report_type,uint8_t* buffer
     return 0;
 }
 
-void start_FFB() {
-
-}
-
-void stop_FFB() {
-
-}
-
 void ffb_control(hid_ffb_t* self, uint8_t cmd){
     //printf("Got Control signal: %d\n",cmd);
     if(cmd & 0x01){ //enable
-        start_FFB();
+        self->effectsCalculator.effects_active = true;
     }if(cmd & 0x02){ //disable
-        stop_FFB();
+        self->effectsCalculator.effects_active = false;
     }if(cmd & 0x04){ //stop TODO Some games send wrong commands?
-        stop_FFB();
+        self->effectsCalculator.effects_active = false;
         //start_FFB();
     }if(cmd & 0x08){ //reset
         //ffb_active = true;
-        stop_FFB();
+        self->effectsCalculator.effects_active = false;
         reset_ffb(self);
         // reset effects
     }if(cmd & 0x10){ //pause
-        stop_FFB();
+        self->effectsCalculator.effects_active = false;
     }if(cmd & 0x20){ //continue
-        start_FFB();
+        self->effectsCalculator.effects_active = true;
     }
 }
 
@@ -316,3 +308,6 @@ void hidCmdCallback(HID_CMD_Data_t* data) {
     HAL_UART_Transmit(&huart1, &buf[0], strlen(buf), 10);
 }
 
+void update(hid_ffb_t* hid_ffb) {
+    EffectsCalculator_calculate_ffb_effect(&hid_ffb->effectsCalculator, &hid_ffb->effects);
+}

@@ -23,3 +23,4 @@ typedef struct {
     uint32_t lastOut;
 } hid_ffb_t;
 void hid_ffb_t_init(hid_ffb_t* self);
+void update(hid_ffb_t* hid_ffb);

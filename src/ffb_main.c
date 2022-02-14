@@ -11,4 +11,5 @@ int ffb_init() {
 
 void ffb_main() {
     tud_task();
+    update(&hid_ffb);
 }

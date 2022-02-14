@@ -20,3 +20,8 @@ float clip_u(uint32_t val, uint32_t upper, uint32_t lower)
 {
     return min(upper, max(val, lower));
 }
+
+float clip_i(int32_t val, int32_t upper, int32_t lower)
+{
+    return min(upper, max(val, lower));
+}
