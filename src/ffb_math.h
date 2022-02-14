@@ -1,6 +1,5 @@
 #pragma once
 
-#include <math.h>
 #include <stdint.h>
 
 float clip_f(float val, float upper, float lower);

@@ -37,5 +37,6 @@ typedef struct {
 void EffectsCalculator_init(EffectsCalculator* self);
 void EffectsCalculator_logEffectType(EffectsCalculator* self, uint8_t type);
 void EffectsCalculator_setFilters(EffectsCalculator* self, FFB_Effect *effect);
+int32_t EffectsCalculator_applyEnvelope(FFB_Effect *effect, int32_t value);
 void EffectsCalculator_setGain(EffectsCalculator* self, uint8_t gain);
-void EffectsCalculator_calculate_ffb_effect(EffectsCalculator* self, FFB_Effect * effects);
+void EffectsCalculator_calculate_ffb_effect(EffectsCalculator* self, FFB_Effect * effects[]);
