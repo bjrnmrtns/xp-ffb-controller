@@ -84,7 +84,7 @@ void EffectsCalculator_setGain(EffectsCalculator* self, uint8_t gain)
     self->global_gain = gain;
 }
 
-void EffectsCalculator_calculate_ffb_effect(EffectsCalculator* self, FFB_Effect * effects[])
+void EffectsCalculator_calculate_ffb_effect(EffectsCalculator* self, std::array<FFB_Effect, MAX_EFFECTS>& effects)
 {
 //    for (auto &axis : axes) {
 //        axis->calculateAxisEffects(isActive());

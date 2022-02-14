@@ -6,9 +6,17 @@
 #include "tusb.h"
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 uint16_t hidGet(uint8_t report_id, hid_report_type_t report_type,uint8_t* buffer, uint16_t reqlen);
 void hidOut(uint8_t report_id, hid_report_type_t report_type, uint8_t const* buffer, uint16_t bufsize);
 void hidCmdCallback(HID_CMD_Data_t* data);
+
+#ifdef __cplusplus
+}
+#endif
 
 typedef struct {
     float accel;	// in deg/s²
@@ -27,7 +35,7 @@ typedef struct {
     int ffb_active;
     FFB_BlockLoad_Feature_Data_t blockLoad_report;
     FFB_PIDPool_Feature_Data_t pool_report;
-    FFB_Effect effects[MAX_EFFECTS];
+    std::array<FFB_Effect, MAX_EFFECTS> effects;
     EffectsCalculator effectsCalculator;
     reportFFB_status_t reportFFBStatus;
     uint32_t lastOut;

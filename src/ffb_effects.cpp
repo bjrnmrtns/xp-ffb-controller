@@ -188,7 +188,7 @@ void reset_ffb(hid_ffb_t* self){
 
 uint16_t hidGet(uint8_t report_id, hid_report_type_t report_type,uint8_t* buffer, uint16_t reqlen){
     char buf[] = "hidGet\r\n";
-    HAL_UART_Transmit(&huart1, &buf[0], strlen(buf), 10);
+    HAL_UART_Transmit(&huart1, (uint8_t*)(uint8_t*)&buf[0], strlen(buf), 10);
     uint8_t id = report_id - FFB_ID_OFFSET;
 
     switch(id){
@@ -231,7 +231,7 @@ void ffb_control(hid_ffb_t* self, uint8_t cmd){
 
 void hidOut(uint8_t report_id, hid_report_type_t report_type, uint8_t const* buffer, uint16_t bufsize) {
     char buf[] = "hidOut\r\n";
-    HAL_UART_Transmit(&huart1, &buf[0], strlen(buf), 10);
+    HAL_UART_Transmit(&huart1, (uint8_t*)(uint8_t*)&buf[0], strlen(buf), 10);
     // FFB Output Message
     const uint8_t* report = buffer;
     uint8_t event_idx = buffer[0] - FFB_ID_OFFSET;
@@ -305,9 +305,9 @@ void hidOut(uint8_t report_id, hid_report_type_t report_type, uint8_t const* buf
 
 void hidCmdCallback(HID_CMD_Data_t* data) {
     char buf[] = "hidCmdCallback\r\n";
-    HAL_UART_Transmit(&huart1, &buf[0], strlen(buf), 10);
+    HAL_UART_Transmit(&huart1, (uint8_t*)&buf[0], strlen(buf), 10);
 }
 
 void update(hid_ffb_t* hid_ffb) {
-    EffectsCalculator_calculate_ffb_effect(&hid_ffb->effectsCalculator, &hid_ffb->effects);
+    EffectsCalculator_calculate_ffb_effect(&hid_ffb->effectsCalculator, hid_ffb->effects);
 }

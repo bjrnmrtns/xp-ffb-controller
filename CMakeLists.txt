@@ -5,8 +5,9 @@ set(CMAKE_TRY_COMPILE_TARGET_TYPE "STATIC_LIBRARY")
 
 project(stm32-tinyusb)
 
-enable_language(C ASM)
+enable_language(CXX C ASM)
 set(CMAKE_C_STANDARD 99)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 #set(CMAKE_C_EXTENSIONS OFF)
 
@@ -41,13 +42,13 @@ add_executable(stm32-tinyusb.elf
 
     Core/Startup/startup_stm32f303vctx.s
 
-    src/biquad.c
-    src/ffb_descriptor.c
-    src/ffb_effects.c
-    src/ffb_effects_calc.c
-    src/ffb_main.c
-    src/ffb_math.c
-    src/usb_callbacks.c
+        src/biquad.cpp
+        src/ffb_descriptor.cpp
+        src/ffb_effects.cpp
+        src/ffb_effects_calc.cpp
+        src/ffb_main.cpp
+        src/ffb_math.cpp
+        src/usb_callbacks.cpp
 
     tinyusb/src/host/hub.c
     tinyusb/src/host/usbh.c

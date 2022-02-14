@@ -1,3 +1,4 @@
+#include "ffb_main.h"
 #include "ffb_effects.h"
 
 #include "tusb.h"
