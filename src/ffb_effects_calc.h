@@ -41,3 +41,4 @@ int32_t EffectsCalculator_applyEnvelope(FFB_Effect *effect, int32_t value);
 void EffectsCalculator_setGain(EffectsCalculator* self, uint8_t gain);
 void EffectsCalculator_calculate_ffb_effect(EffectsCalculator* self, FFB_Effect * effects[]);
 int32_t EffectsCalculator_calcNonConditionEffectForce(EffectsCalculator* self, FFB_Effect *effect);
+int32_t EffectsCalculator_calcComponentForce(EffectsCalculator* self, FFB_Effect *effect, int32_t forceVector, /*std::vector<std::unique_ptr<Axis>> &axes,*/ uint8_t axis);

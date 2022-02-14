@@ -11,6 +11,16 @@ void hidOut(uint8_t report_id, hid_report_type_t report_type, uint8_t const* buf
 void hidCmdCallback(HID_CMD_Data_t* data);
 
 typedef struct {
+    float accel;	// in deg/s²
+    float accelInstant;
+    float speed;
+    float speedInstant; // in deg/s
+    int32_t pos;
+    float posDegrees;
+    int32_t torque; // total of effect + endstop torque
+} metric_t;
+
+typedef struct {
     uint32_t hid_out_period; // ms since last out report for measuring update rate
     uint8_t last_effect_id;
     uint16_t used_effects;
