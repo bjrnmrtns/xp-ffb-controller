@@ -6,6 +6,7 @@
 
 #include "stm32f3xx_hal.h"
 #include <math.h>
+#include <stdlib.h>
 #include <stddef.h>
 #include <stdint.h>
 #define X_AXIS_ENABLE 1
@@ -128,12 +129,12 @@ void EffectsCalculator_calculate_ffb_effect(EffectsCalculator* self, FFB_Effect 
 
 
         if (effect->conditionsCount == 0) {
-         //   forceVector = calcNonConditionEffectForce(effect);
+            forceVector = EffectsCalculator_calcNonConditionEffectForce(self, effect);
         }
 
         if (effect->enableAxis == DIRECTION_ENABLE || (effect->enableAxis & X_AXIS_ENABLE))
         {
-        //    forceX += calcComponentForce(effect, forceVector, axes, 0);
+            //forceX += calcComponentForce(effect, forceVector, axes, 0);
             forceX = clip_i(forceX, -0x7fff, 0x7fff); // Clip
         }
         if (validY && ((effect->enableAxis == DIRECTION_ENABLE) || (effect->enableAxis & Y_AXIS_ENABLE)))
@@ -288,4 +289,37 @@ int32_t EffectsCalculator_calcNonConditionEffectForce(EffectsCalculator* self, F
         force_vector = EffectsCalculator_applyEnvelope(effect, (int32_t)force_vector);
     }
     return force_vector;
+}
+
+/**
+ * Calculates a conditional effect
+ * Takes care of deadband and offsets and scalers
+ * Gain of 255 = 1x. Prescale with scale factor
+ */
+int32_t EffectsCalculator_calcConditionEffectForce(FFB_Effect *effect, float  metric, uint8_t gain,
+                                                    uint8_t idx, float scale, float angle_ratio)
+{
+    int16_t offset = effect->conditions[idx].cpOffset;
+    int16_t deadBand = effect->conditions[idx].deadBand;
+    int32_t force = 0;
+    float gainfactor = (float)(gain+1) / 256.0;
+
+    // Effect is only active outside deadband + offset
+    if (abs(metric - offset) > deadBand){
+        float coefficient = effect->conditions[idx].negativeCoefficient;
+        if(metric > offset){
+            coefficient = effect->conditions[idx].positiveCoefficient;
+        }
+        coefficient /= 0x7fff; // rescale the coefficient of effect
+
+        // remove offset/deadband from metric to compute force
+        metric = metric - (offset + (deadBand * (metric < offset ? -1 : 1)) );
+
+        force = clip_i((coefficient * gainfactor * scale * (float)(metric)),
+                                       -effect->conditions[idx].negativeSaturation,
+                                       effect->conditions[idx].positiveSaturation);
+    }
+
+
+    return force * angle_ratio;
 }
