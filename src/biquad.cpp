@@ -1,8 +1,7 @@
 #include "biquad.h"
 
-#include <math.h>
-
-#include "ffb_math.h"
+#include <cmath>
+#include <algorithm>
 
 void biquad_init_none(Biquad* self) {
     self->opt = opt_none;
@@ -25,7 +24,7 @@ float biquad_process(Biquad* self, float in) {
 
 void setBiquad(Biquad* self, BiquadType type, float Fc, float Q, float peakGain) {
     self->opt = opt_some;
-    self->Fc = clip_f(Fc,0,0.5);
+    self->Fc = std::clamp(Fc,0.0f,0.5f);
     self->type = type;
     self->Q = Q;
     self->Fc = Fc;
@@ -34,7 +33,7 @@ void setBiquad(Biquad* self, BiquadType type, float Fc, float Q, float peakGain)
 }
 
 void setFc(Biquad* self, float Fc) {
-    Fc = clip_f(Fc,0,0.5);
+    Fc = std::clamp(Fc,0.0f,0.5f);
     self->Fc = Fc;
     calcBiquad(self);
 }

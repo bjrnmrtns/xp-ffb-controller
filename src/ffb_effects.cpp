@@ -1,7 +1,7 @@
 #include "ffb_effects.h"
 #include "ffb_descriptor.h"
-#include "ffb_math.h"
 
+#include <algorithm>
 #include <stdint.h>
 #include "stm32f3xx_hal.h"
 #include "tusb.h"
@@ -170,7 +170,7 @@ void set_ramp(hid_ffb_t* self, FFB_SetRamp_Data_t *report){
 void set_periodic(hid_ffb_t* self, FFB_SetPeriodic_Data_t* report){
     FFB_Effect* effect = &self->effects[report->effectBlockIndex-1];
 
-    effect->period = clip_u(report->period,1,0x7fff); // Period is never 0
+    effect->period = std::clamp(report->period,(uint32_t)1,(uint32_t)0x7fff); // Period is never 0
     effect->magnitude = report->magnitude;
     effect->offset = report->offset;
     effect->phase = report->phase;

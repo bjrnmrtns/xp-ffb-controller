@@ -1,10 +1,10 @@
 #include "ffb_effects_calc.h"
 #include "ffb_effects.h"
-#include "ffb_math.h"
 
 #include "biquad.h"
 
 #include "stm32f3xx_hal.h"
+#include <algorithm>
 #include <math.h>
 #include <stdlib.h>
 #include <stddef.h>
@@ -135,12 +135,12 @@ void EffectsCalculator_calculate_ffb_effect(EffectsCalculator* self, std::array<
         if (effect->enableAxis == DIRECTION_ENABLE || (effect->enableAxis & X_AXIS_ENABLE))
         {
             forceX += EffectsCalculator_calcComponentForce(self, effect, forceVector, 0);
-            forceX = clip_i(forceX, -0x7fff, 0x7fff); // Clip
+            forceX = std::clamp(forceX, (int32_t)-0x7fff, (int32_t)0x7fff); // Clip
         }
         if (validY && ((effect->enableAxis == DIRECTION_ENABLE) || (effect->enableAxis & Y_AXIS_ENABLE)))
         {
             forceY += EffectsCalculator_calcComponentForce(self, effect, forceVector, 1);
-            forceY = clip_i(forceY, -0x7fff, 0x7fff); // Clip
+            forceY = std::clamp(forceY, (int32_t)-0x7fff, (int32_t)0x7fff); // Clip
         }
 
     }
@@ -315,9 +315,9 @@ int32_t EffectsCalculator_calcConditionEffectForce(FFB_Effect *effect, float  me
         // remove offset/deadband from metric to compute force
         metric = metric - (offset + (deadBand * (metric < offset ? -1 : 1)) );
 
-        force = clip_i((coefficient * gainfactor * scale * (float)(metric)),
-                                       -effect->conditions[idx].negativeSaturation,
-                                       effect->conditions[idx].positiveSaturation);
+        force = std::clamp((coefficient * gainfactor * scale * (float)(metric)),
+                           (float)-effect->conditions[idx].negativeSaturation,
+                           (float)effect->conditions[idx].positiveSaturation);
     }
 
 
@@ -431,7 +431,7 @@ int32_t EffectsCalculator_calcComponentForce(EffectsCalculator* self, FFB_Effect
 
 			//if there is a saturation, used it to clip result
 			if (effect->conditions[con_idx].negativeSaturation !=0 || effect->conditions[con_idx].positiveSaturation !=0) {
-				force = clip_i(force, -effect->conditions[con_idx].negativeSaturation, effect->conditions[con_idx].positiveSaturation);
+				force = std::clamp(force, (int32_t)-effect->conditions[con_idx].negativeSaturation, (int32_t)effect->conditions[con_idx].positiveSaturation);
 			}
 
 //			static int32_t last_force = 0;
