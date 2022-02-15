@@ -18,13 +18,7 @@ void hid_ffb_t_init(hid_ffb_t* self) {
     self->last_effect_id = 0;
     self->used_effects = 0;
     self->ffb_active = 0;
-    FFB_BlockLoad_Feature_Data_t_init(&self->blockLoad_report);
-    FFB_PIDPool_Feature_Data_t_init(&self->pool_report);
-    for(size_t i = 0; i < MAX_EFFECTS; i++) {
-        FFB_Effect_init(&self->effects[i]);
-    }
     EffectsCalculator_init(&self->effectsCalculator);
-    reportFFB_status_t_init(&self->reportFFBStatus);
     self->lastOut = 0;
 
 }
@@ -53,7 +47,7 @@ void free_effect(hid_ffb_t* self, uint16_t idx){
     if(idx < MAX_EFFECTS){
         self->effects[idx].type=FFB_EFFECT_NONE;
         for(int i=0; i< MAX_AXIS; i++) {
-            self->effects[idx].filter[i].opt = opt_none;
+            self->effects[idx].filter[i] = std::nullopt;
         }
     }
 }
@@ -88,7 +82,7 @@ void new_effect(hid_ffb_t* self, FFB_CreateNewEffect_Feature_Data_t* effect){
         return;
     }
     FFB_Effect* new_effect = &self->effects[index - 1];
-    FFB_Effect_init(new_effect);
+    *new_effect = FFB_Effect();
     new_effect->type = effect->effectType;
     EffectsCalculator_logEffectType(&self->effectsCalculator, effect->effectType);
     set_filters(self, new_effect);

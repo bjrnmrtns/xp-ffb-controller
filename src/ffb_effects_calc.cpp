@@ -57,22 +57,22 @@ void EffectsCalculator_setFilters(EffectsCalculator* self, FFB_Effect *effect) {
     {
         case FFB_EFFECT_DAMPER:
             for(size_t i = 0; i < MAX_AXIS; i++) {
-                biquad_init(&effect->filter[i], lowpass, self->damper_f / (float)self->calcfrequency, self->damper_q,0.0);
+                effect->filter[i] = Biquad(BiquadType::lowpass, self->damper_f / (float)self->calcfrequency, self->damper_q,0.0);
             }
             break;
         case FFB_EFFECT_FRICTION:
             for(size_t i = 0; i < MAX_AXIS; i++) {
-                    biquad_init(&effect->filter[i], lowpass, self->friction_f / (float)self->calcfrequency, self->friction_q, 0.0);
+                    effect->filter[i] = Biquad(BiquadType::lowpass, self->friction_f / (float)self->calcfrequency, self->friction_q, 0.0);
             }
             break;
         case FFB_EFFECT_INERTIA:
             for(size_t i = 0; i < MAX_AXIS; i++) {
-                    biquad_init(&effect->filter[i], lowpass, self->inertia_f / (float)self->calcfrequency, self->inertia_q, 0.0);
+                    effect->filter[i] = Biquad(BiquadType::lowpass, self->inertia_f / (float)self->calcfrequency, self->inertia_q, 0.0);
             }
             break;
         case FFB_EFFECT_CONSTANT:
             for(size_t i = 0; i < MAX_AXIS; i++) {
-                    biquad_init(&effect->filter[i], lowpass, self->cfFilter_f / (float)self->calcfrequency,
+                    effect->filter[i] = Biquad(BiquadType::lowpass, self->cfFilter_f / (float)self->calcfrequency,
                                       self->cfFilter_qfloatScaler * (self->cfFilter_q + 1), 0.0);
             }
             break;
@@ -188,7 +188,7 @@ int32_t EffectsCalculator_calcNonConditionEffectForce(EffectsCalculator* self, F
             // Optional filtering to reduce spikes
             if (self->cfFilter_f < self->calcfrequency / 2 && self->cfFilter_f != 0 )
             {
-                force_vector = biquad_process(&effect->filter[0], force_vector);
+                force_vector = effect->filter[0].value().process(force_vector);
             }
             break;
         }
@@ -442,7 +442,7 @@ int32_t EffectsCalculator_calcComponentForce(EffectsCalculator* self, FFB_Effect
 //				result_torque -=  force * angle_ratio;
 //			}
 //			last_force = force;
-			result_torque -= biquad_process(&effect->filter[con_idx], (((self->gain.friction + 1) * force) >> 8) * angle_ratio * self->friction_scaler);
+			result_torque -= effect->filter[con_idx].value().process((((self->gain.friction + 1) * force) >> 8) * angle_ratio * self->friction_scaler);
 		}
 //			float accel = metrics->accel * scaleAccel;
 //			result_torque -= calcConditionEffectForce(effect, accel, gain.friction, con_idx, friction_scaler, angle_ratio);
@@ -453,7 +453,7 @@ int32_t EffectsCalculator_calcComponentForce(EffectsCalculator* self, FFB_Effect
 	{
 
 		float speed = metrics->speed * scaleSpeed;
-		result_torque -=  biquad_process(&effect->filter[con_idx], EffectsCalculator_calcConditionEffectForce(effect,speed, self->gain.damper, con_idx, self->damper_scaler, angle_ratio));
+		result_torque -=  effect->filter[con_idx].value().process(EffectsCalculator_calcConditionEffectForce(effect,speed, self->gain.damper, con_idx, self->damper_scaler, angle_ratio));
 
 		break;
 	}
@@ -461,7 +461,7 @@ int32_t EffectsCalculator_calcComponentForce(EffectsCalculator* self, FFB_Effect
 	case FFB_EFFECT_INERTIA:
 	{
 		float accel = metrics->accel* scaleAccel;
-		result_torque -= biquad_process(&effect->filter[con_idx], EffectsCalculator_calcConditionEffectForce(effect, accel, self->gain.inertia, con_idx, self->inertia_scaler, angle_ratio)); // Bump *60 the inertia feedback
+		result_torque -= effect->filter[con_idx].value().process(EffectsCalculator_calcConditionEffectForce(effect, accel, self->gain.inertia, con_idx, self->inertia_scaler, angle_ratio)); // Bump *60 the inertia feedback
 
 		break;
 	}

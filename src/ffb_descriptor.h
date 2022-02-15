@@ -3,6 +3,8 @@
 
 #include "biquad.h"
 
+#include <array>
+#include <optional>
 #include <stdint.h>
 
 #define USB_HID_FFB_REPORT_DESC_SIZE 1229//1378
@@ -92,25 +94,21 @@ extern const uint8_t hid_ffb_desc[USB_HID_FFB_REPORT_DESC_SIZE];
 #define HID_DIRECTION_ENABLE 0x04
 #define FFB_EFFECT_DURATION_INFINITE 0xffff
 
-
-typedef struct
+struct __attribute__((packed)) FFB_BlockLoad_Feature_Data_t
 {
-	uint8_t	reportId;// = HID_ID_BLKLDREP;
+	uint8_t	reportId = HID_ID_BLKLDREP;
 	uint8_t effectBlockIndex;	// 1..max_effects
 	uint8_t	loadStatus;	// 1=Success,2=Full,3=Error
 	uint16_t	ramPoolAvailable;
-} __attribute__((packed)) FFB_BlockLoad_Feature_Data_t;
+} ;
 
-void FFB_BlockLoad_Feature_Data_t_init(FFB_BlockLoad_Feature_Data_t* self);
-
-typedef struct
+struct __attribute__((packed)) FFB_PIDPool_Feature_Data_t
 {
-	uint8_t	reportId;// = HID_ID_POOLREP;
-	uint16_t	ramPoolSize;// = MAX_EFFECTS;
-	uint8_t		maxSimultaneousEffects;// = MAX_EFFECTS;
-	uint8_t		memoryManagement;// = 1;	// 0=DeviceManagedPool, 1=SharedParameterBlocks
-} __attribute__((packed)) FFB_PIDPool_Feature_Data_t;
-void FFB_PIDPool_Feature_Data_t_init(FFB_PIDPool_Feature_Data_t* self);
+	uint8_t	reportId = HID_ID_POOLREP;
+	uint16_t	ramPoolSize = MAX_EFFECTS;
+	uint8_t		maxSimultaneousEffects = MAX_EFFECTS;
+	uint8_t		memoryManagement = 1;	// 0=DeviceManagedPool, 1=SharedParameterBlocks
+};
 
 typedef struct
 {
@@ -145,47 +143,45 @@ typedef struct
 } __attribute__((packed)) HID_CMD_Data_t;
 
 // Internal struct for storing effects
-typedef struct
+struct FFB_Effect
 {
-    volatile uint8_t state;
-    uint8_t type; // Type
-    int16_t offset;				// Center point
-    uint8_t gain;				// Scaler. often unused
-    int16_t magnitude;			// High res intensity of effect
-    int16_t startLevel;			// Ramp effect
-    int16_t endLevel;			// Ramp effect
-    uint8_t enableAxis;			// Active axis
-    uint16_t directionX;		// angle (0=0 .. 36000=360deg)
-    uint16_t directionY;		// angle (0=0 .. 36000=360deg)
+    volatile uint8_t state = 0;
+    uint8_t type = FFB_EFFECT_NONE; // Type
+    int16_t offset = 0;				// Center point
+    uint8_t gain = 255;				// Scaler. often unused
+    int16_t magnitude = 0;			// High res intensity of effect
+    int16_t startLevel = 0;			// Ramp effect
+    int16_t endLevel = 0;			// Ramp effect
+    uint8_t enableAxis = 0;			// Active axis
+    uint16_t directionX = 0;		// angle (0=0 .. 36000=360deg)
+    uint16_t directionY = 0;		// angle (0=0 .. 36000=360deg)
 #if MAX_AXIS == 3
-    uint8_t directionZ; // angle (0=0 .. 255=360deg)
+    uint8_t directionZ = 0; // angle (0=0 .. 255=360deg)
 #endif
-    uint8_t conditionsCount;
-    FFB_Effect_Condition conditions[MAX_AXIS];
-    int16_t phase;
-    uint16_t period;
-    uint32_t duration;					 // Duration in ms
-    uint16_t attackLevel, fadeLevel; // Envelope effect
-    uint32_t attackTime, fadeTime;	 // Envelope effect
+    uint8_t conditionsCount = 0;
+    std::array<FFB_Effect_Condition, MAX_AXIS> conditions;
+    int16_t phase = 0;
+    uint16_t period = 0;
+    uint32_t duration = 0;					 // Duration in ms
+    uint16_t attackLevel = 0, fadeLevel = 0; // Envelope effect
+    uint32_t attackTime = 0, fadeTime = 0;	 // Envelope effect
 
-    Biquad filter[MAX_AXIS];  // Optional filter
-    uint16_t startDelay;
-    uint32_t startTime;	  // Elapsed time in ms before effect starts
-    uint16_t samplePeriod;
-    int useEnvelope;
-} FFB_Effect;
-void FFB_Effect_init(FFB_Effect* self);
+    std::array<std::optional<Biquad>, MAX_AXIS> filter;  // Optional filter
+    uint16_t startDelay = 0;
+    uint32_t startTime = 0;	  // Elapsed time in ms before effect starts
+    uint16_t samplePeriod = 0;
+    int useEnvelope = 0;
+};
 
-typedef struct
+struct __attribute__((packed)) reportFFB_status_t
 {
-    uint8_t	reportId;
-    uint8_t	effectBlockIndex;	//EffectId
-    uint8_t	status;	// Bits: 0=Device Paused,1=Actuators Enabled,2=Safety Switch,3=Actuator Power, 4=Effect Playing
+    uint8_t	reportId = HID_ID_STATE+FFB_ID_OFFSET;
+    uint8_t	effectBlockIndex = 1;	//EffectId
+    uint8_t	status = (HID_ACTUATOR_POWER) | (HID_ENABLE_ACTUATORS);	// Bits: 0=Device Paused,1=Actuators Enabled,2=Safety Switch,3=Actuator Power, 4=Effect Playing
 
-} __attribute__((packed)) reportFFB_status_t;
-void reportFFB_status_t_init(reportFFB_status_t* self);
+};
 
-typedef struct
+struct  __attribute__((packed)) FFB_SetEffect_t
 {
     uint8_t		reportId;
     uint8_t		effectBlockIndex;	// 1..max_effects
@@ -202,10 +198,9 @@ typedef struct
 #if MAX_AXIS == 3
     uint8_t directionZ = 0; // angle (0=0 .. 255=360deg)
 #endif
-} __attribute__((packed)) FFB_SetEffect_t;
-void FFB_SetEffect_t_init(FFB_SetEffect_t* self);
+};
 
-typedef struct
+struct  __attribute__((packed)) FFB_SetPeriodic_Data_t
 {
     uint8_t	reportId;
     uint8_t	effectBlockIndex;
@@ -213,9 +208,9 @@ typedef struct
     int16_t	offset;
     uint16_t	phase;	// degrees
     uint32_t	period;	// 0..32767 ms
-} __attribute__((packed)) FFB_SetPeriodic_Data_t;
+};
 
-typedef struct
+struct  __attribute__((packed)) FFB_SetEnvelope_Data_t
 {
     uint8_t reportId;
     uint8_t effectBlockIndex;
@@ -223,17 +218,17 @@ typedef struct
     uint16_t fadeLevel;
     uint32_t attackTime;
     uint32_t fadeTime;
-} __attribute__((packed)) FFB_SetEnvelope_Data_t;
+};
 
-typedef struct
+struct  __attribute__((packed)) FFB_SetRamp_Data_t
 {
     uint8_t reportId;
     uint8_t effectBlockIndex;
     uint16_t startLevel;
     uint16_t endLevel;
-} __attribute__((packed)) FFB_SetRamp_Data_t;
+};
 
-typedef struct
+struct  __attribute__((packed)) FFB_SetCondition_Data_t
 {
     uint8_t		reportId;
     uint8_t		effectBlockIndex;	// 1..max_effects
@@ -244,13 +239,13 @@ typedef struct
     uint16_t	positiveSaturation;	// Clipping point for positive range
     uint16_t	negativeSaturation;
     uint16_t	deadBand;
-} __attribute__((packed)) FFB_SetCondition_Data_t;
+};
 
-typedef struct
+struct  __attribute__((packed)) FFB_SetConstantForce_Data_t
 {
     uint8_t	reportId;
     uint8_t	effectBlockIndex;	// 1..max_effects
     int16_t magnitude;	// High res intensity
-} __attribute__((packed)) FFB_SetConstantForce_Data_t;
+};
 
 #endif /* SRC_FFB_DESCRIPTOR_H_ */
